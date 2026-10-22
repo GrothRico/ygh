@@ -1,0 +1,29 @@
+{
+  "name": "ygh",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "24.22.x"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "typecheck": "next typegen && tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "next build"
+  },
+  "dependencies": {
+    "next": "16.4.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.1",
+    "eslint-config-next": "16.4.2",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5"
+  }
+}

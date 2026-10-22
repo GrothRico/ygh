@@ -1,0 +1,47 @@
+:root {
+  color-scheme: light;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #172033;
+  background: #f4f6fa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.startseite {
+  display: grid;
+  min-height: 100vh;
+  align-content: center;
+  justify-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.startseite h1,
+.startseite p {
+  margin: 0;
+}
+
+.startseite h1 {
+  font-size: clamp(2rem, 6vw, 4rem);
+  letter-spacing: -0.04em;
+}
+
+.startseite > p:last-child {
+  color: #526078;
+  line-height: 1.6;
+}
+
+.marke {
+  color: #3757b8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
