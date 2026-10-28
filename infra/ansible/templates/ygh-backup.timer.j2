@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the YGH backup once daily at 03:15 UTC
+
+[Timer]
+OnCalendar=*-*-* 03:15:00 UTC
+Persistent=true
+AccuracySec=1min
+Unit=ygh-backup.service
+
+[Install]
+WantedBy=timers.target

@@ -1,6 +1,6 @@
 # P0-05 – Entwicklungsvertrag
 
-Stand: 2026-10-21. Der Benutzer hat diesen Entwicklungsplan als Planungsgrundlage freigegeben; damit ist keine Implementierung freigegeben. Keine Pakete wurden installiert; die Versions- und Kompatibilitätsprüfung stützt sich auf die an diesem Datum sichtbaren offiziellen Releaseangaben, Paketmetadaten und Projektdokumentation. Installation und Lockfile-Auflösung bleiben P1-01/P1-02, native Builds und Produktionsimage P1-06 vorbehalten.
+Historischer Planungsstand: 2026-10-21; Lint-Auswahl aktualisiert am 2026-10-22. Die folgenden Aussagen zu noch ausstehenden Installationen beziehen sich auf den Planungszeitpunkt; durchgeführte P1-01-Prüfungen stehen in [Entwicklung](../entwicklung.md). Der Benutzer hat diesen Entwicklungsplan als Planungsgrundlage freigegeben; damit ist keine Implementierung freigegeben. Keine Pakete wurden installiert; die Versions- und Kompatibilitätsprüfung stützt sich auf die an diesem Datum sichtbaren offiziellen Releaseangaben, Paketmetadaten und Projektdokumentation. Installation und Lockfile-Auflösung bleiben P1-01/P1-02, native Builds und Produktionsimage P1-06 vorbehalten.
 
 ## Auswahl
 
@@ -11,7 +11,7 @@ Stand: 2026-10-21. Der Benutzer hat diesen Entwicklungsplan als Planungsgrundlag
 | SQLite-Zugriff | Drizzle ORM `0.45.4`, `better-sqlite3` `13.0.3` | Drizzle dokumentiert den Treiber direkt; die ORM-Peer-Abhängigkeit erlaubt `better-sqlite3 >=7`, die Treiberversion liegt darin. Synchroner Zugriff passt zur einzelnen lokalen SQLite-Instanz und kurzen Transaktionen. |
 | Schema/Migrationen | Drizzle Kit `0.31.11` | Für diesen Vorschlag bestätigter stabiler Pin; erzeugt SQL-Migrationen und führt sie aus. Es wird ausschließlich der versionierte `generate`/`migrate`-Pfad verwendet. |
 | TypeScript | `5.9.3` | Stabile Version mit breiter Bibliothekskompatibilität; kein Nightly/Prerelease. |
-| Linting | ESLint `9.39.1`, `eslint-config-next` `16.4.2` | Next-Konfiguration auf gleicher Frameworkversion; Lint läuft über die ESLint-CLI, nicht über `next lint`. |
+| Linting | Oxlint `1.89.0` | Ersetzt seit 2026-10-22 den historischen ESLint-9-/Next-Konfigurationsvorschlag; Regelvergleich und Grenzen siehe Nachtrag unten. |
 | Verhaltenstests | Vitest `5.0.5` | Aktuelle stabile Vitest-Linie; Node-Anforderung ab 22.12 ist mit Node 24 erfüllt. Für Fachlogik und temporäre SQLite-Dateien; keine Browserplattform als Grundgerüst-Abhängigkeit. |
 | Servergrenze | `server-only` `0.0.1` | Next.js-üblicher Marker, damit DB- und Authmodule nicht in Client-Bundles importiert werden. |
 | Typdefinitionen | `@types/node` `24.19.2`, `@types/react` und `@types/react-dom` `19.3.0`, `@types/better-sqlite3` `9.6.0` | Passen zu den gewählten Laufzeit-/Bibliothekslinien; sie sind Entwicklungsabhängigkeiten. |
@@ -71,13 +71,13 @@ Lokale Entwicklung enthält keinen Auth-Bypass. Der lokale Dev-Server bindet exp
 
 ## Sollbefehle
 
-Diese Befehle beschreiben die nach P1-01 einzurichtenden npm-Skripte und sind aktuell nicht ausführbar:
+Diese Befehle beschreiben die in P1-01 eingerichteten npm-Skripte sowie die erst in P1-02 einzurichtenden DB-Skripte:
 
 | Zweck | Geplanter Befehl |
 | --- | --- |
 | Entwicklung | `npm run dev` → `next dev --hostname 127.0.0.1` |
 | Typprüfung | `npm run typecheck` → `next typegen && tsc --noEmit` |
-| Linting | `npm run lint` → `eslint .` |
+| Linting | `npm run lint` → `oxlint .` |
 | Tests | `npm test` → `vitest run` |
 | Produktionsbuild | `npm run build` → `next build` |
 | Migration generieren (P1-02) | `npm run db:generate` → `drizzle-kit generate` |
@@ -90,7 +90,7 @@ Als exakte Installationsvorgabe für die jeweils beauftragten Einrichtungspakete
 ```sh
 # P1-01: Projekt- und Prüfwerkzeuge
 npm install --save-exact next@16.4.2 react@19.3.0 react-dom@19.3.0
-npm install --save-dev --save-exact typescript@5.9.3 eslint@9.39.1 eslint-config-next@16.4.2 vitest@5.0.5 @types/node@24.19.2 @types/react@19.3.0 @types/react-dom@19.3.0
+npm install --save-dev --save-exact typescript@5.9.3 oxlint@1.89.0 vitest@5.0.5 @types/node@24.19.2 @types/react@19.3.0 @types/react-dom@19.3.0
 
 # P1-02: Datenbank und Migrationswerkzeug
 npm install --save-exact drizzle-orm@0.45.4 better-sqlite3@13.0.3 server-only@0.0.1
@@ -114,10 +114,15 @@ Die Befehle sind Planinhalt, wurden nicht ausgeführt und dürfen erst in den je
 - React, [React 19.3.0 auf npm](https://www.npmjs.com/package/react), [React DOM](https://www.npmjs.com/package/react-dom) und [Typdefinitionen](https://www.npmjs.com/package/@types/react).
 - Drizzle, [SQLite-Treiber inklusive `better-sqlite3`](https://orm.drizzle.team/docs/sqlite/get-started-sqlite), [Drizzle ORM auf npm](https://www.npmjs.com/package/drizzle-orm), [versionierte Peer-Metadaten für 0.45.4](https://github.com/drizzle-team/drizzle-orm/blob/0.45.4/drizzle-orm/package.json) sowie [Migrationen mit Drizzle Kit](https://orm.drizzle.team/docs/kit-overview).
 - npm-Paketmetadaten: [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3), [`drizzle-kit`](https://www.npmjs.com/package/drizzle-kit), [`typescript`](https://www.npmjs.com/package/typescript), [`eslint`](https://www.npmjs.com/package/eslint), [`vitest`](https://www.npmjs.com/package/vitest), [`server-only`](https://www.npmjs.com/package/server-only), [`@types/node`](https://www.npmjs.com/package/@types/node), [`@types/react-dom`](https://www.npmjs.com/package/@types/react-dom), [`@types/better-sqlite3`](https://www.npmjs.com/package/@types/better-sqlite3).
+
 - Next.js, [CLI-Befehle inkl. `typegen`](https://nextjs.org/docs/app/api-reference/cli/next); ein frischer Checkout erzeugt Routentypen mit `next typegen` vor `tsc --noEmit`.
 - Vitest, [aktuelle unterstützte Versionen und Node-Anforderung](https://vitest.dev/releases.html), [Vitest 5 Release](https://vitest.dev/blog/vitest-5).
 - Docker, [Multi-Platform-Builds und Zielplattformen](https://docs.docker.com/build/building/multi-platform/) und [Node.js Images](https://github.com/nodejs/docker-node). Der konkrete `24.22.1-bookworm-slim`-Tag wird beim P1-06-Imagebuild bestätigt; dieser Plan behauptet keine bereits erprobte Tag-/Registryverfügbarkeit.
 - Next.js, [Output-Dateisystem und Standalone-Output](https://nextjs.org/docs/app/api-reference/config/next-config-js/output); Zugriffssicherheitsvertrag siehe [P0-04](zugriff.md).
+
+### P1-01-Nachtrag: Lintwerkzeug
+
+Die Paketmetadaten und Installationsbefunde vom 2026-10-22 führten zur Umstellung auf [oxlint@1.89.0](https://registry.npmjs.org/oxlint/1.89.0). Oxlint dokumentiert native Plugins für [React und Hooks](https://oxc.rs/docs/guide/usage/linter/plugins), [Next.js, TypeScript, JSX-a11y und Imports](https://oxc.rs/docs/guide/usage/linter/plugins); die [Regelkonfiguration](https://oxc.rs/docs/guide/usage/linter/config) wird im Projekt auf die abgebildeten Regeln begrenzt. 80 der vorher 86 aktiven ESLint-Regeln wurden mit ihrer bisherigen Schwere und Optionen abgebildet. Nicht enthalten sind `react/jsx-uses-react`, `react/jsx-uses-vars`, `react/no-deprecated`, `react-hooks/config`, `react-hooks/gating` und `@next/next/no-location-assign-relative-destination`. Die beiden `jsx-uses`-Regeln dienen ESLints JSX-Bindungsverfolgung; Oxlint behandelt diese nativ; `react/no-deprecated` und die Next-Regel sind echte Regelabdeckungslücken. Compilerregeln `config`/`gating` fehlen in Oxlint; das Projekt hat derzeit keine Compiler-Konfiguration. Es wird keine Regelparität behauptet.
 
 ## Offene Grenze
 

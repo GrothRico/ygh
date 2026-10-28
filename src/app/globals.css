@@ -3,45 +3,80 @@
   font-family: Arial, Helvetica, sans-serif;
   color: #172033;
   background: #f4f6fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
 }
 
-* {
-  box-sizing: border-box;
+* { box-sizing: border-box; }
+
+html { min-width: 320px; scroll-behavior: smooth; }
+
+body { margin: 0; min-height: 100vh; }
+
+a { color: inherit; }
+
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+.skip-link {
+  position: absolute;
+  z-index: 2;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  background: #172033;
+  border-radius: 0.5rem;
+  transform: translateY(-150%);
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
+.skip-link:focus { transform: translateY(0); }
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  min-height: 76px;
+  padding: 0 clamp(1rem, 5vw, 4rem);
+  background: #fff;
+  border-bottom: 1px solid #e5e9f1;
 }
 
-.startseite {
-  display: grid;
-  min-height: 100vh;
-  align-content: center;
-  justify-items: center;
-  gap: 1rem;
-  padding: 2rem;
-  text-align: center;
+.brand { display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+.brand-mark { display: grid; width: 40px; height: 40px; place-items: center; color: #fff; background: #3757b8; border-radius: 13px; font-size: 1.25rem; font-weight: 800; }
+.brand strong, .brand small { display: block; }
+.brand strong { font-size: 0.95rem; letter-spacing: 0.12em; }
+.brand small { margin-top: 0.15rem; color: #65718a; font-size: 0.75rem; }
+.app-header nav { display: flex; align-self: stretch; align-items: center; }
+.nav-link { display: flex; align-items: center; height: 100%; padding: 0 0.3rem; color: #30477f; border-bottom: 2px solid #3757b8; font-size: 0.9rem; font-weight: 700; text-decoration: none; }
+.private-label { display: inline-flex; align-items: center; gap: 0.5rem; margin-left: auto; color: #53617a; font-size: 0.8rem; }
+.private-label span { width: 8px; height: 8px; background: #3c9a6b; border-radius: 50%; }
+
+.content { width: min(100% - 2rem, 1060px); margin: 0 auto; flex: 1; padding: clamp(2.5rem, 7vw, 5.5rem) 0 4rem; }
+.welcome { max-width: 700px; }
+.eyebrow { margin: 0 0 0.8rem; color: #3757b8; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.welcome h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.3rem); letter-spacing: -0.045em; line-height: 1.08; }
+.intro { margin: 1rem 0 0; color: #58657c; font-size: clamp(1rem, 2vw, 1.15rem); line-height: 1.65; }
+.connection-note { margin: 0.7rem 0 0; color: #65718a; font-size: 0.85rem; line-height: 1.55; }
+.empty-state { display: flex; align-items: flex-start; gap: 1.1rem; margin-top: clamp(2rem, 6vw, 3.5rem); padding: clamp(1.25rem, 4vw, 2rem); background: #fff; border: 1px solid #e4e9f2; border-radius: 1rem; box-shadow: 0 12px 36px rgb(28 44 80 / 5%); }
+.empty-icon { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; color: #3757b8; background: #edf1ff; border-radius: 14px; font-size: 1.25rem; }
+.empty-state h2 { margin: 0.2rem 0 0.45rem; font-size: 1.05rem; }
+.empty-state p { margin: 0; color: #647089; line-height: 1.6; }
+.app-footer { padding: 1.25rem 1rem; color: #58657c; border-top: 1px solid #e5e9f1; font-size: 0.78rem; text-align: center; }
+
+.startseite { display: grid; min-height: 100vh; align-content: center; justify-items: center; gap: 1rem; padding: 2rem; text-align: center; }
+.startseite h1, .startseite p { margin: 0; }
+.startseite h1 { font-size: clamp(2rem, 6vw, 4rem); letter-spacing: -0.04em; }
+.startseite > p:last-child { color: #526078; line-height: 1.6; }
+.marke { color: #3757b8; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.2em; }
+
+@media (max-width: 600px) {
+  .app-header { min-height: 64px; gap: 1rem; padding: 0 1rem; }
+  .brand-mark { width: 36px; height: 36px; }
+  .nav-link { font-size: 0.82rem; }
+  .private-label { font-size: 0.72rem; }
+  .content { width: min(100% - 2rem, 1060px); padding-top: 3rem; }
+  .empty-state { gap: 0.85rem; }
 }
 
-.startseite h1,
-.startseite p {
-  margin: 0;
-}
-
-.startseite h1 {
-  font-size: clamp(2rem, 6vw, 4rem);
-  letter-spacing: -0.04em;
-}
-
-.startseite > p:last-child {
-  color: #526078;
-  line-height: 1.6;
-}
-
-.marke {
-  color: #3757b8;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

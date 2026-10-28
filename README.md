@@ -2,7 +2,7 @@
 
 Private Anwendung für zwei Brüder zur Verwaltung von ungefähr 15.000 Karten, ihren physischen Standorten, Decks und Cubes. Bedienung auf Deutsch im Desktop-Browser sowie auf iPhone und Android als installierbare Web-App.
 
-Die Implementierung beginnt mit P1-01, einem minimalen lokalen TypeScript-/Next.js-Grundgerüst. Produktfunktionen und Infrastruktur folgen in getrennten Arbeitspaketen; der aktuelle Stand steht im Aufgabenindex.
+P1-01 bis P1-10 sind abgenommen. P1-11 enthält den lokalen Backupjob und steht nach Implementierung und Prüfungen auf Review. Kein B2-Konto, echter Zielhost, Timerlauf oder Restore wurde eingerichtet beziehungsweise ausgeführt. Kartenverwaltung und Produktivbetrieb sind noch nicht fertig; den Wiedereinstieg beschreibt der [Zwischenbericht](docs/zwischenbericht-2026-10-22.md).
 
 ## Projektdokumentation
 
@@ -25,4 +25,4 @@ TypeScript, Next.js, SQLite mit Drizzle, Docker Compose und Ansible auf einem ge
 
 Eine Anwendung, eine Datenbank und wenige Dienste. Fachlogik bleibt in normalen TypeScript-Modulen. Keine Microservices, kein Kubernetes, keine allgemeine Regelmaschine und keine automatisierte Yu-Gi-Oh!-Spielengine.
 
-Stand der Vereinbarungen: 21. Oktober 2026.
+Stand: 27. Oktober 2026; P1-10 abgenommen, P1-11 im Review.

@@ -1,0 +1,39 @@
+---
+- name: Render a deny-by-default Tailscale policy for manual review
+  hosts: tailnet
+  connection: local
+  become: false
+  gather_facts: false
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+
+  tasks:
+    - name: Require two distinct login names and an output path
+      ansible.builtin.assert:
+        that:
+          - ygh_tailscale_rico_login is defined
+          - ygh_tailscale_second_user_login is defined
+          - ygh_tailscale_rico_login != ygh_tailscale_second_user_login
+          - ygh_tailscale_rico_login is string
+          - ygh_tailscale_rico_login | length > 0
+          - ygh_tailscale_rico_login == ygh_tailscale_rico_login | trim
+          - ygh_tailscale_rico_login is not search('[,\r\n]')
+          - ygh_tailscale_second_user_login is string
+          - ygh_tailscale_second_user_login | length > 0
+          - ygh_tailscale_second_user_login == ygh_tailscale_second_user_login | trim
+          - ygh_tailscale_second_user_login is not search('[,\r\n]')
+          - ygh_tailnet_policy_output is defined
+        fail_msg: Set both login names and a private local output path in the inventory.
+
+    - name: Render the policy outside the repository for manual application
+      ansible.builtin.template:
+        src: templates/tailnet-policy.hujson.j2
+        dest: "{{ ygh_tailnet_policy_output }}"
+        mode: "0600"
+      no_log: true
+      run_once: true
+
+    - name: Report the policy render location
+      ansible.builtin.debug:
+        msg: "Tailnet policy rendered at {{ ygh_tailnet_policy_output }}. Review and apply it manually in the Tailscale admin console."
+      run_once: true

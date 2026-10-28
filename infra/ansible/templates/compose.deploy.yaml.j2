@@ -1,0 +1,29 @@
+services:
+  app:
+    image: {{ ygh_compose_image | to_json }}
+    pull_policy: never
+    logging:
+      driver: journald
+    environment:
+      APP_ORIGIN: {{ ygh_app_origin | replace('$', '$$') | to_json }}
+      TAILSCALE_RICO_LOGIN: {{ ygh_tailscale_rico_login | replace('$', '$$') | to_json }}
+      TAILSCALE_SECOND_USER_LOGIN: {{ ygh_tailscale_second_user_login | replace('$', '$$') | to_json }}
+      YGH_SECOND_USER_DISPLAY_NAME: {{ ygh_second_user_display_name | replace('$', '$$') | to_json }}
+      DATABASE_PATH: /data/collection.sqlite
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - app-data:/data
+    networks:
+      - app-private
+    init: true
+    restart: unless-stopped
+
+volumes:
+  app-data:
+    name: ygh-app-data
+
+networks:
+  app-private:
+    name: ygh-app-private
+    driver: bridge

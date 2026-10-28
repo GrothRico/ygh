@@ -1,0 +1,43 @@
+# Environment and credentials; retain only the documented placeholder template.
+.env*
+!.env.example
+
+# Local dependencies, build products, and VCS metadata.
+node_modules
+.next
+out
+build
+.git
+.github
+.agents
+.codex
+
+# Tests and transient developer artifacts.
+**/*.test.*
+**/__tests__/
+coverage
+*.log
+tmp
+temp
+**/.tmp
+**/.temp
+*.tmp
+*.temp
+.DS_Store
+
+# SQLite databases and their journals, WAL, and shared-memory companions.
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.db3
+*.db3-*
+*.wal
+*.shm
+*.journal
+
+# Host infrastructure may contain local inventories and backup credentials.
+# It is not required by the application image.
+infra/

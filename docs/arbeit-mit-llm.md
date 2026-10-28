@@ -4,11 +4,25 @@ Ziel ist eine nachvollziehbare Umsetzung durch ein günstiges Coding-Modell. Kle
 
 ## Aktueller Stand
 
-P1-01 ist als erstes Implementierungspaket beauftragt; Einrichtung und Prüfergebnisse werden in docs/entwicklung.md dokumentiert. Kein Server bestellt. Weitere Arbeitspakete benötigen einen ausdrücklichen Einzelauftrag. [Aufgabenindex](aufgaben/README.md) und [Entscheidungsregister](entscheidungen.md) sind der gemeinsame Stand über Chats hinweg.
+P1-01 bis P1-13 sind abgenommen. P0-06/E06 wurde am 2026-10-27 als Planungsgrundlage freigegeben. P1-14 ist auf ausdrücklichen Wunsch zurückgestellt; es gibt noch keinen echten Server und keinen Betriebsauftrag. P1-15 verwendet das vom Benutzer festgelegte bestehende private GitHub-Repository; die lokale Arbeitskopie hat kein konfiguriertes Git-Remote. P1-15 steht im Status Review. Für P1-12 bleiben die dokumentierten Live-Gates vor Nutzung echter Sammlungsdaten erforderlich: kein externes Speicherziel, Live-Alarm, Serverjob oder Restore mit echten Nutzdaten wurde praktisch eingerichtet. Der [Zwischenbericht](zwischenbericht-2026-10-22.md) bleibt ein unveränderter historischer Snapshot. [Aufgabenindex](aufgaben/README.md) und [Entscheidungsregister](entscheidungen.md) bleiben maßgeblich.
 
 ## Rollen im aktuellen Projekt
 
 Luna ist der ausführende Agent für das jeweils beauftragte Paket. Der Hauptagent bleibt die kritisch prüfende Instanz: Er prüft Änderungen gegen Anforderungen und Quellen, unterscheidet belegte Ergebnisse von Annahmen und fordert gezielte Nacharbeit bei konkreten Fehlern. Lunas Selbstprüfung ersetzt diese Prüfung nicht; menschliche Freigabe und praktische Abnahmen bleiben erforderlich.
+
+### Reasoning für Luna wählen
+
+Vom Benutzer am 2026-10-22 festgelegt: Der Hauptagent wählt Lunas Reasoning-Stufe selbstständig passend zum konkreten Auftrag. Standard ist **Medium**, nicht pauschal High.
+
+| Stufe | Einsatz |
+| --- | --- |
+| Low | Einfache Dokumentationsänderungen und klar vorgegebene kleine Korrekturen. |
+| Medium | Normale, klar abgegrenzte Implementierung einschließlich Tests, beispielsweise eine einfache SQLite-Anbindung wie P1-02. |
+| High | Schwierige Fehlersuche, Zugriffsschutz, komplexe Bestandstransaktionen, Wiederherstellung oder ähnlich anspruchsvolle Integritätsfragen. |
+
+Bei der Beauftragung die Stufe ausdrücklich setzen und kurz begründen. Entscheidend ist die tatsächliche Teilaufgabe: Eine einfache Dokumentationskorrektur in einem Sicherheitspaket braucht nicht automatisch High. Bei konkreten Denk- oder Diagnoseproblemen kann der Hauptagent die Stufe für die gezielte Nacharbeit erhöhen; fehlende Informationen oder Netzwerk-/Werkzeugfehler werden nicht durch mehr Reasoning gelöst. Die bestehenden Grenzen für Reparaturversuche bleiben gültig.
+
+Die unabhängige kritische Prüfung und die Abnahmekriterien bleiben bei jeder Stufe gleich. Aufwand anhand des gesamten Durchgangs einschließlich nötiger Nacharbeit beurteilen; ein Kostenvorteil oder gleiche Qualität wird ohne Vergleich nicht als bewiesen behandelt. High ist keine Qualitätsgarantie. Orientierung: [OpenAI-Dokumentation zu Reasoning](https://developers.openai.com/api/docs/guides/reasoning), geprüft am 2026-10-22.
 
 ## Ein Paket je Arbeitsdurchgang
 

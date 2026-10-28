@@ -1,0 +1,22 @@
+[Unit]
+Description=Check YGH loopback liveness and free disk space
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+EnvironmentFile=/etc/ygh/alarms.env
+UMask=0077
+ExecStart=/usr/local/sbin/ygh-healthcheck host
+TimeoutStartSec=15s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/ygh/monitoring
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+StandardOutput=journal
+StandardError=journal

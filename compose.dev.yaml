@@ -1,0 +1,21 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: ygh:dev
+    platform: linux/amd64
+    environment:
+      APP_ORIGIN: ${APP_ORIGIN-}
+      TAILSCALE_RICO_LOGIN: ${TAILSCALE_RICO_LOGIN-}
+      TAILSCALE_SECOND_USER_LOGIN: ${TAILSCALE_SECOND_USER_LOGIN-}
+      DATABASE_PATH: /data/collection-dev.sqlite
+    ports:
+      - "127.0.0.1:3001:3000"
+    volumes:
+      - ./src:/app/src:ro
+      - dev-data:/data
+    init: true
+
+volumes:
+  dev-data:

@@ -1,0 +1,109 @@
+---
+- name: Configure private Tailscale HTTPS Serve
+  hosts: tailnet
+  become: true
+  gather_facts: true
+  environment:
+    LC_ALL: C
+
+  pre_tasks:
+    - name: Require a fresh deployment account connection
+      ansible.builtin.assert:
+        that:
+          - ansible_user == ygh_deploy_user
+          - ygh_deploy_user == "deploy"
+        fail_msg: Connect as deploy through the server's Tailscale MagicDNS name.
+
+    - name: Drop any reused SSH connection before management verification
+      ansible.builtin.meta: reset_connection
+
+    - name: Require a fresh authenticated deployment session
+      ansible.builtin.ping:
+      become: false
+
+    - name: Verify the SSH login is deploy
+      ansible.builtin.command:
+        argv: [id, -un]
+      register: management_user
+      changed_when: false
+      failed_when: management_user.rc != 0 or management_user.stdout != ygh_deploy_user
+      become: false
+
+    - name: Verify passwordless sudo
+      ansible.builtin.command:
+        argv: [sudo, -n, /usr/bin/true]
+      changed_when: false
+      become: false
+
+    - name: Verify this session against the live Tailscale SSH path
+      ansible.builtin.script: "{{ playbook_dir }}/files/verify_tailscale_management.py"
+      register: management_path
+      changed_when: false
+      failed_when: management_path.rc != 0
+      no_log: true
+      become: false
+
+    - name: Require IPv6 filtering in UFW
+      ansible.builtin.command:
+        argv: [grep, -Eq, '^[[:space:]]*IPV6="?yes"?[[:space:]]*$', /etc/default/ufw]
+      changed_when: false
+
+    - name: Read the configured host firewall rules
+      ansible.builtin.command:
+        argv: [ufw, show, added]
+      register: ufw_rules
+      changed_when: false
+
+    - name: Read the active host firewall state
+      ansible.builtin.command:
+        argv: [ufw, status, verbose]
+      register: ufw_status
+      changed_when: false
+
+    - name: Require the finalized private host firewall policy
+      ansible.builtin.assert:
+        that:
+          - "'Status: active' in ufw_status.stdout"
+          - "'Default: deny (incoming), allow (outgoing)' in ufw_status.stdout"
+          - "'22/tcp on tailscale0' in ufw_status.stdout"
+          - "'443/tcp on tailscale0' in ufw_status.stdout"
+          - >-
+            ufw_rules.stdout_lines | select('match', '^ufw ') | list | sort ==
+            ['ufw allow in on tailscale0 to any port 22 proto tcp',
+             'ufw allow in on tailscale0 to any port 443 proto tcp']
+        fail_msg: Run finalize-firewall.yml over verified Tailscale SSH before Serve configuration.
+
+    - name: Check that this server is enrolled in a tailnet
+      ansible.builtin.command:
+        argv: [tailscale, ip, -4]
+      register: tailscale_ipv4
+      changed_when: false
+      failed_when: tailscale_ipv4.rc != 0 or tailscale_ipv4.stdout | trim | length == 0
+
+    - name: Refuse unknown Serve/Funnel state or accept only the exact private route
+      ansible.builtin.script: "{{ playbook_dir }}/files/verify_tailscale_serve.py"
+      register: serve_precheck
+      changed_when: false
+      failed_when: serve_precheck.rc != 0
+      no_log: true
+
+  tasks:
+    - name: Configure HTTPS 443 to the loopback-only application port
+      ansible.builtin.command:
+        argv:
+          - tailscale
+          - serve
+          - --bg
+          - --yes
+          - --https=443
+          - http://127.0.0.1:3000
+      register: serve_configure
+      when: serve_precheck.stdout | trim == "empty"
+      changed_when: true
+
+    - name: Confirm only the exact private HTTPS route remains configured
+      ansible.builtin.script: "{{ playbook_dir }}/files/verify_tailscale_serve.py"
+      register: serve_final_status
+      changed_when: false
+      failed_when: serve_final_status.rc != 0 or serve_final_status.stdout | trim != "ready"
+      no_log: true

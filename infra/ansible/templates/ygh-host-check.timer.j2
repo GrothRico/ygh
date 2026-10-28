@@ -1,0 +1,11 @@
+[Unit]
+Description=Check YGH app liveness and free disk space every five minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+AccuracySec=30s
+Unit=ygh-host-check.service
+
+[Install]
+WantedBy=timers.target

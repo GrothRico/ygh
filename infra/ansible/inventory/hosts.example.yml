@@ -1,0 +1,26 @@
+all:
+  children:
+    bootstrap:
+      hosts:
+        ygh-bootstrap:
+          # Reserved documentation address. Replace it only for the initial setup.
+          ansible_host: 203.0.113.10
+          ansible_user: root
+    tailnet:
+      hosts:
+        ygh-server:
+          # Use the server's MagicDNS name after Tailscale is configured.
+          ansible_host: ygh-server.example-tailnet.ts.net
+          ansible_user: deploy
+          # Replace every reserved example value in an ignored real inventory.
+          ygh_tailscale_rico_login: rico@example.invalid
+          ygh_tailscale_second_user_login: second@example.invalid
+          ygh_second_user_display_name: Zweiter Benutzer
+          ygh_app_origin: https://ygh-server.example-tailnet.ts.net
+          ygh_tailnet_policy_output: /tmp/ygh-tailnet-policy.hujson
+          ygh_image_archive: /tmp/ygh-image.tar
+          ygh_image_archive_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+          ygh_image_ref: ygh:release-placeholder
+          ygh_image_id: "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+          # Set true only for the explicitly reviewed, empty first deployment.
+          ygh_initialize_new_database: false

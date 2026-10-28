@@ -1,0 +1,23 @@
+[Unit]
+Description=Create an encrypted YGH SQLite and operations-log backup
+Requires=docker.service
+After=docker.service systemd-journald.service
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+EnvironmentFile=/etc/ygh/backup.env
+EnvironmentFile=/etc/ygh/alarms.env
+UMask=0077
+ExecStart=/usr/local/sbin/ygh-backup
+ExecStopPost=/usr/local/sbin/ygh-healthcheck backup
+TimeoutStartSec=2h
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/ygh/backups /var/lib/ygh/monitoring /run/lock
+ReadOnlyPaths=/var/lib/ygh/compose.yaml
+StandardOutput=journal
+StandardError=journal

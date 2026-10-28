@@ -1,0 +1,55 @@
+---
+- name: Install Tailscale before manual enrollment
+  hosts: bootstrap
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Require Ubuntu 26.04 LTS amd64
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.distribution == "Ubuntu"
+          - ansible_facts.distribution_version is version("26.04", "==")
+          - ansible_facts.architecture == "x86_64"
+
+  tasks:
+    - name: Install the Tailscale repository key
+      ansible.builtin.get_url:
+        url: "https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_facts.distribution_release }}.noarmor.gpg"
+        dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Configure the signed Tailscale package repository
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/tailscale.sources
+        content: |
+          Types: deb
+          URIs: https://pkgs.tailscale.com/stable/ubuntu
+          Suites: {{ ansible_facts.distribution_release }}
+          Components: main
+          Architectures: amd64
+          Signed-By: /usr/share/keyrings/tailscale-archive-keyring.gpg
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Install Tailscale
+      ansible.builtin.apt:
+        name: tailscale
+        state: present
+        update_cache: true
+
+    - name: Enable the Tailscale daemon without enrolling the machine
+      ansible.builtin.systemd_service:
+        name: tailscaled
+        state: started
+        enabled: true
+
+    - name: Report the required manual enrollment
+      ansible.builtin.debug:
+        msg: >-
+          Enrollment was not started. Apply the reviewed policy, then run
+          `tailscale up --ssh --advertise-tags=tag:ygh-server` in the approved
+          operator session and approve the device in the admin console.

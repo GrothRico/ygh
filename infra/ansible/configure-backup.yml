@@ -1,0 +1,194 @@
+---
+- name: Configure the encrypted YGH backup job
+  hosts: tailnet
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Require the supported Ubuntu host and explicit Restic repository secrets
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+          - ansible_distribution_version is version("26.04", "==")
+          - ansible_architecture == "x86_64"
+          - ygh_restic_repository is defined
+          - ygh_restic_repository is string
+          - ygh_restic_repository | length > 0
+          - ygh_restic_repository is search('^s3:https://s3[.]eu-central-003[.]backblazeb2[.]com/[^/]+/.+')
+          - ygh_restic_password is defined
+          - ygh_restic_password is string
+          - ygh_restic_password | length > 0
+          - ygh_b2_access_key_id is defined
+          - ygh_b2_secret_access_key is defined
+          - ygh_b2_access_key_id is string
+          - ygh_b2_secret_access_key is string
+          - ygh_b2_access_key_id | length > 0
+          - ygh_b2_secret_access_key | length > 0
+          - ygh_backup_healthcheck_url is defined
+          - ygh_backup_healthcheck_url is string
+          - ygh_backup_healthcheck_url is search('^https://hc-ping[.]com/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')
+          - ygh_host_healthcheck_url is defined
+          - ygh_host_healthcheck_url is string
+          - ygh_host_healthcheck_url is search('^https://hc-ping[.]com/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')
+          - ygh_backup_retention_enabled | default(false) is boolean
+          - "'\\n' not in ygh_restic_repository"
+          - "'\\r' not in ygh_restic_repository"
+          - "'\\n' not in ygh_restic_password"
+          - "'\\r' not in ygh_restic_password"
+          - "'\\n' not in ygh_b2_access_key_id"
+          - "'\\r' not in ygh_b2_access_key_id"
+          - "'\\n' not in ygh_b2_secret_access_key"
+          - "'\\r' not in ygh_b2_secret_access_key"
+          - "'\\n' not in ygh_backup_healthcheck_url"
+          - "'\\r' not in ygh_backup_healthcheck_url"
+          - "'\\n' not in ygh_host_healthcheck_url"
+          - "'\\r' not in ygh_host_healthcheck_url"
+        fail_msg: >-
+          Configure an EU Central bucket-scoped Restic repository, its password,
+          and its S3 application key through encrypted deployment variables.
+      no_log: true
+
+  tasks:
+    - name: Install the Ubuntu Restic package
+      ansible.builtin.apt:
+        name: restic
+        state: present
+        update_cache: true
+
+    - name: Read the installed Restic version
+      ansible.builtin.command:
+        argv: [restic, version]
+      register: installed_restic
+      changed_when: false
+
+    - name: Require the tested Restic 0.18 command interface
+      ansible.builtin.assert:
+        that:
+          - installed_restic.rc == 0
+          - installed_restic.stdout is search('^restic 0\\.18\\.')
+        fail_msg: The installed Restic version is outside the tested Ubuntu 26.04 package line.
+
+    - name: Ensure the protected backup staging and state directories exist
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner }}"
+        group: "{{ item.group }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { path: /etc/ygh, owner: root, group: root, mode: "0700" }
+        - { path: /var/lib/ygh/backups, owner: root, group: root, mode: "0700" }
+        - { path: /var/lib/ygh/backups/staging, owner: root, group: root, mode: "0700" }
+        - { path: /var/lib/ygh/backups/state, owner: root, group: root, mode: "0700" }
+        - { path: /var/lib/ygh/monitoring, owner: root, group: root, mode: "0700" }
+        - { path: /var/lib/ygh/restores, owner: root, group: root, mode: "0700" }
+        - { path: /usr/local/lib/ygh, owner: root, group: root, mode: "0755" }
+        - { path: /run/lock, owner: root, group: root, mode: "0755" }
+
+    - name: Install the backup runner with root-only execution
+      ansible.builtin.copy:
+        src: files/ygh-backup.sh
+        dest: /usr/local/sbin/ygh-backup
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Install root-only Restic and B2 credentials
+      ansible.builtin.template:
+        src: templates/backup.env.j2
+        dest: /etc/ygh/backup.env
+        owner: root
+        group: root
+        mode: "0600"
+      diff: false
+      no_log: true
+
+    - name: Install root-only Healthchecks.io ping URLs
+      ansible.builtin.template:
+        src: templates/alarms.env.j2
+        dest: /etc/ygh/alarms.env
+        owner: root
+        group: root
+        mode: "0600"
+      diff: false
+      no_log: true
+
+    - name: Install the read-only restore verifier
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../scripts/restore-verify.ts"
+        dest: /usr/local/lib/ygh/restore-verify.ts
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Install the isolated restore command
+      ansible.builtin.copy:
+        src: files/ygh_restore_check.py
+        dest: /usr/local/sbin/ygh-restore-check
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Install the Healthchecks.io integration and local host checker
+      ansible.builtin.copy:
+        src: files/ygh_healthcheck.py
+        dest: /usr/local/sbin/ygh-healthcheck
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Install the five-minute host-check service
+      ansible.builtin.template:
+        src: templates/ygh-host-check.service.j2
+        dest: /etc/systemd/system/ygh-host-check.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Install the five-minute host-check timer
+      ansible.builtin.template:
+        src: templates/ygh-host-check.timer.j2
+        dest: /etc/systemd/system/ygh-host-check.timer
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Install the systemd backup service
+      ansible.builtin.template:
+        src: templates/ygh-backup.service.j2
+        dest: /etc/systemd/system/ygh-backup.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Install the daily 03:15 UTC backup timer
+      ansible.builtin.template:
+        src: templates/ygh-backup.timer.j2
+        dest: /etc/systemd/system/ygh-backup.timer
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Apply unit files before starting the timer
+      ansible.builtin.meta: flush_handlers
+
+    - name: Enable the five-minute host-check timer
+      ansible.builtin.systemd_service:
+        name: ygh-host-check.timer
+        enabled: true
+        state: started
+
+    - name: Enable the daily backup timer
+      ansible.builtin.systemd_service:
+        name: ygh-backup.timer
+        enabled: true
+        state: started
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd_service:
+        daemon_reload: true

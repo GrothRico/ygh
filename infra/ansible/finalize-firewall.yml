@@ -1,0 +1,158 @@
+---
+- name: Verify private management and apply the owned UFW policy
+  hosts: tailnet
+  become: true
+  gather_facts: false
+  serial: 1
+  environment:
+    LC_ALL: C
+
+  pre_tasks:
+    - name: Require the documented deployment account in inventory
+      ansible.builtin.assert:
+        that:
+          - ansible_user == ygh_deploy_user
+          - ygh_deploy_user == "deploy"
+        fail_msg: Connect as deploy through the Tailscale MagicDNS name in the inventory.
+
+    - name: Drop any reused SSH connection before the management probe
+      ansible.builtin.meta: reset_connection
+
+    - name: Require a fresh authenticated deploy session
+      ansible.builtin.ping:
+      become: false
+
+    - name: Confirm the SSH identity is deploy
+      ansible.builtin.command:
+        argv: [id, -un]
+      register: management_user
+      changed_when: false
+      failed_when: management_user.rc != 0 or management_user.stdout != ygh_deploy_user
+      become: false
+
+    - name: Confirm passwordless sudo works
+      ansible.builtin.command:
+        argv: [sudo, -n, /usr/bin/true]
+      changed_when: false
+      become: false
+
+    - name: Verify this SSH session against live Tailscale state
+      ansible.builtin.script: "{{ playbook_dir }}/files/verify_tailscale_management.py"
+      register: tailscale_management_probe
+      changed_when: false
+      failed_when: tailscale_management_probe.rc != 0
+      no_log: true
+      become: false
+
+    - name: Require IPv6 filtering to be enabled in UFW
+      ansible.builtin.command:
+        argv:
+          - grep
+          - -Eq
+          - '^[[:space:]]*IPV6="?yes"?[[:space:]]*$'
+          - /etc/default/ufw
+      register: ufw_ipv6_setting
+      changed_when: false
+      failed_when: ufw_ipv6_setting.rc != 0
+
+    - name: Read the existing UFW status
+      ansible.builtin.command:
+        argv: [ufw, status, verbose]
+      register: initial_ufw_status
+      changed_when: false
+
+    - name: Read configured UFW user rules
+      ansible.builtin.command:
+        argv: [ufw, show, added]
+      register: initial_ufw_rules
+      changed_when: false
+
+    - name: Require an unused firewall or only this playbook's saved rules
+      ansible.builtin.assert:
+        that:
+          - >-
+            'Status: inactive' in initial_ufw_status.stdout or
+            ('Status: active' in initial_ufw_status.stdout and
+             'Default: deny (incoming), allow (outgoing)' in initial_ufw_status.stdout)
+          - >-
+            initial_ufw_rules.stdout_lines | select('match', '^ufw ') | list == [] or
+            (initial_ufw_rules.stdout_lines | select('match', '^ufw ') | list |
+             difference([
+               'ufw allow in on tailscale0 to any port 22 proto tcp',
+               'ufw allow in on tailscale0 to any port 443 proto tcp'
+             ]) | length == 0 and
+             initial_ufw_rules.stdout_lines | select('match', '^ufw ') | list | unique | length ==
+             initial_ufw_rules.stdout_lines | select('match', '^ufw ') | list | length)
+        fail_msg: >-
+          This playbook only manages an unused UFW policy or its Tailscale SSH/HTTPS
+          rules. Other explicit rules or a different active default require manual review.
+
+  tasks:
+    - name: Permit TCP 22 only on the Tailscale interface
+      community.general.ufw:
+        rule: allow
+        interface: tailscale0
+        direction: in
+        proto: tcp
+        port: "22"
+
+    - name: Permit private HTTPS only on the Tailscale interface
+      community.general.ufw:
+        rule: allow
+        interface: tailscale0
+        direction: in
+        proto: tcp
+        port: "443"
+
+    - name: Deny other unsolicited inbound host traffic
+      community.general.ufw:
+        direction: incoming
+        policy: deny
+
+    - name: Allow outbound host traffic for updates and Tailscale connectivity
+      community.general.ufw:
+        direction: outgoing
+        policy: allow
+
+    - name: Enable the verified host firewall
+      community.general.ufw:
+        state: enabled
+
+    - name: Confirm UFW is active with only the private SSH and HTTPS allow rules
+      ansible.builtin.command:
+        argv: [ufw, status, verbose]
+      register: final_ufw_status
+      changed_when: false
+      failed_when: >-
+        final_ufw_status.rc != 0 or
+        'Status: active' not in final_ufw_status.stdout or
+        'Default: deny (incoming), allow (outgoing)' not in final_ufw_status.stdout or
+        '22/tcp on tailscale0' not in final_ufw_status.stdout or
+        '443/tcp on tailscale0' not in final_ufw_status.stdout or
+        ('ALLOW IN' in final_ufw_status.stdout and
+         final_ufw_status.stdout_lines | select('search', 'ALLOW IN') |
+         reject('search', '22/tcp on tailscale0|443/tcp on tailscale0') |
+         list | length > 0)
+
+    - name: Reconnect after firewall activation with a fresh session
+      ansible.builtin.meta: reset_connection
+
+    - name: Require a fresh post-firewall deployment connection with sudo
+      ansible.builtin.ping:
+      become: true
+
+    - name: Verify the post-firewall connection against live Tailscale state
+      ansible.builtin.script: "{{ playbook_dir }}/files/verify_tailscale_management.py"
+      register: post_firewall_management_probe
+      changed_when: false
+      failed_when: post_firewall_management_probe.rc != 0
+      no_log: true
+      become: false
+
+    - name: Report the host firewall boundary
+      ansible.builtin.debug:
+        msg: >-
+          Host UFW is active for IPv4 and IPv6 with TCP/22 and TCP/443 on tailscale0
+          and deny-incoming by default.
+          Docker published ports bypass UFW; Compose loopback publishing with Docker
+          Engine 28 or later protects the private app upstream.

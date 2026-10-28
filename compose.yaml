@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ygh:local
+    platform: linux/amd64
+    environment:
+      APP_ORIGIN: ${APP_ORIGIN-}
+      TAILSCALE_RICO_LOGIN: ${TAILSCALE_RICO_LOGIN-}
+      TAILSCALE_SECOND_USER_LOGIN: ${TAILSCALE_SECOND_USER_LOGIN-}
+      DATABASE_PATH: /data/collection.sqlite
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - app-data:/data
+    networks:
+      - app-private
+    init: true
+
+volumes:
+  app-data:
+
+networks:
+  app-private:
+    driver: bridge

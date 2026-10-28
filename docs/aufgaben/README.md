@@ -1,15 +1,15 @@
 # Aufgabenindex
 
-Stand: Planung abgeschlossen, Implementierung nicht begonnen. Jede Zeile ist ein separat zu beauftragendes Paket. Statusänderungen nur anhand tatsächlicher Arbeit und Freigabe.
+Stand: P1-01 bis P1-13 abgenommen; P0-06 freigegeben. P1-14 ist auf ausdrücklichen Wunsch zurückgestellt. P1-15 nutzt das vom Benutzer festgelegte bestehende private GitHub-Repository und steht im Status Review; lokal ist kein Remote konfiguriert. Der [Zwischenbericht vom 22. Oktober 2026](../zwischenbericht-2026-10-22.md) bleibt historisch. Jede Zeile ist ein separat zu beauftragendes Paket. Statusänderungen nur anhand tatsächlicher Arbeit und Freigabe.
 
 Für ein günstiges Modell: eine ID pro Chat/Durchgang. Der [Startprompt](../arbeit-mit-llm.md) und [AGENTS.md](../../AGENTS.md) gelten für jedes Paket. Offene Architekturentscheidungen zuerst klären; das Modell soll sie nicht während einer Implementierung improvisieren.
 
 ## Start und Freigabepunkte
 
-1. Historischer Planungshinweis: P0-01 bis P0-06 waren als getrennte Recherche-/Entscheidungspakete vorgesehen. Der aktuelle Stand steht ausschließlich in der Statustabelle; P0-02 und P0-06 sind weiterhin Review.
+1. Historischer Planungshinweis: P0-01 bis P0-06 waren als getrennte Recherche-/Entscheidungspakete vorgesehen. Der aktuelle Stand steht ausschließlich in der Statustabelle; P0-02 bleibt Review, P0-06 ist freigegeben.
 2. E04/E05 sind als Planungsgrundlage freigegeben. Daraus folgt keine Auth- oder Paketimplementierung; P1-Pakete brauchen ihren eigenen Auftrag.
 3. P1-01 einzeln starten, dann in Abhängigkeitsreihenfolge fortfahren. Lokale Prototypen brauchen keinen bestellten Server.
-4. P1-14 benötigt einen separaten Betriebsauftrag und eine freigegebene Kostenentscheidung. Vor echten Sammlungsdaten muss dieser Sicherheits-/Restore-Gate bestanden sein.
+4. P1-14 ist auf ausdrücklichen Wunsch zurückgestellt und wurde nicht gestartet. Es gibt noch keinen echten Server und keinen Betriebsauftrag. Vor echten Sammlungsdaten bleibt der Sicherheits-/Restore-Gate einschließlich externer Alarme, unabhängiger Recoverykopie und vollständigem Restore erforderlich; dafür braucht es später einen separaten Betriebsauftrag und eine freigegebene Kostenentscheidung.
 5. Reale Collectr-Migration braucht zusätzlich P3-05. Ohne Export können die übrigen Funktionen mit synthetischen Daten weiterentwickelt werden.
 6. Vor jedem späteren Meilenstein Paketgrenzen gegen tatsächlichen Code prüfen und konkrete Pfade ergänzen. Keine Änderung der Produktanforderungen.
 
@@ -22,22 +22,22 @@ Für ein günstiges Modell: eine ID pro Chat/Durchgang. Der [Startprompt](../arb
 | P0-03 | [Betriebskosten vergleichen](m0.md) | — | Abgenommen |
 | P0-04 | [Privaten Zugriff und Identität festlegen](m0.md) | P0-03 | Abgenommen |
 | P0-05 | [Entwicklungsvertrag festlegen](m0.md) | P0-04 | Abgenommen |
-| P0-06 | [Sicherung und Betriebsprüfung festlegen](m0.md) | P0-03, P0-04 | Review |
-| P1-01 | [Minimales TypeScript-Projekt](m1.md) | P0-05 | Review |
-| P1-02 | [SQLite und Migrationen einführen](m1.md) | P1-01 | Geplant |
-| P1-03 | [Identität und Sitzungen anbinden](m1.md) | P1-02, P0-04 | Geplant |
-| P1-04 | [Zugriffsschutz für Server und Dateien](m1.md) | P1-03 | Geplant |
-| P1-05 | [Strukturiertes Anwendungslogging](m1.md) | P1-04 | Geplant |
-| P1-06 | [Produktionscontainer bauen](m1.md) | P1-05 | Geplant |
-| P1-07 | [Docker-Entwicklungsbetrieb](m1.md) | P1-06 | Geplant |
-| P1-08 | [Ansible-Servergrundlage](m1.md) | P1-06, P0-03, P0-04 | Geplant |
-| P1-09 | [Privates HTTPS und Deployment](m1.md) | P1-08, P1-04 | Geplant |
-| P1-10 | [Betriebslogs begrenzen](m1.md) | P1-09, P0-06 | Geplant |
-| P1-11 | [Backupjob implementieren](m1.md) | P1-10, P0-06 | Geplant |
-| P1-12 | [Restore und Betriebsalarme](m1.md) | P1-11 | Geplant |
-| P1-13 | [Mobile Hülle und PWA](m1.md) | P1-07, P1-04 | Geplant |
+| P0-06 | [Sicherung und Betriebsprüfung festlegen](m0.md) | P0-03, P0-04 | Abgenommen |
+| P1-01 | [Minimales TypeScript-Projekt](m1.md) | P0-05 | Abgenommen |
+| P1-02 | [SQLite und Migrationen einführen](m1.md) | P1-01 | Abgenommen |
+| P1-03 | [Identität und Sitzungen anbinden](m1.md) | P1-02, P0-04 | Abgenommen |
+| P1-04 | [Zugriffsschutz für Server und Dateien](m1.md) | P1-03 | Abgenommen |
+| P1-05 | [Strukturiertes Anwendungslogging](m1.md) | P1-04 | Abgenommen |
+| P1-06 | [Produktionscontainer bauen](m1.md) | P1-05 | Abgenommen |
+| P1-07 | [Docker-Entwicklungsbetrieb](m1.md) | P1-06 | Abgenommen |
+| P1-08 | [Ansible-Servergrundlage](m1.md) | P1-06, P0-03, P0-04 | Abgenommen |
+| P1-09 | [Privates HTTPS und Deployment](m1.md) | P1-08, P1-04 | Abgenommen |
+| P1-10 | [Betriebslogs begrenzen](m1.md) | P1-09, P0-06 | Abgenommen |
+| P1-11 | [Backupjob implementieren](m1.md) | P1-10, P0-06 | Abgenommen |
+| P1-12 | [Restore und Betriebsalarme](m1.md) | P1-11 | Abgenommen |
+| P1-13 | [Mobile Hülle und PWA](m1.md) | P1-07, P1-04 | Abgenommen |
 | P1-14 | [Privaten Betrieb abnehmen](m1.md) | P1-09, P1-12, P1-13 | Geplant |
-| P1-15 | [Automatische Repository-Prüfungen](m1.md) | P1-06 | Geplant |
+| P1-15 | [Automatische Repository-Prüfungen](m1.md) | P1-06 | Review |
 | P2-01 | [Katalogschema und Beispieldaten](m2.md) | P1-02, P0-01 | Geplant |
 | P2-02 | [Katalogdaten synchronisieren](m2.md) | P2-01 | Geplant |
 | P2-03 | [Bilder und Kartensuche](m2.md) | P2-02, P1-04 | Geplant |
@@ -74,6 +74,14 @@ Für ein günstiges Modell: eine ID pro Chat/Durchgang. Der [Startprompt](../arb
 | P7-04 | [Optionale Kategoriepacks](m7.md) | P5-07, P5-08 | Geplant |
 
 ## Abnahmevermerke
+
+P1-11 am 2026-10-27 abgenommen; der Benutzer bestätigte nach unabhängigem Review „ok, ist in ordnung. done, continue.“ Die lokalen synthetischen Nachweise und Grenzen sind in [Entwicklung](../entwicklung.md) und [Betriebsuntersuchung](../untersuchungen/betrieb.md) festgehalten. Kein B2-Konto, Livehost, echter Timerlauf oder Produktivbestand wurde freigegeben.
+
+P1-12 am 2026-10-27 in Review übergeben. Lokale Tests und ein isolierter synthetischer Restic-Restore bestanden; sechs Linux-spezifische Vitesttests liefen separat erfolgreich. Kein Healthchecks-Ping, keine E-Mail, kein B2-Konto, kein Livehost und kein echter Bestand wurden verwendet. Mengenvergleich bleibt auf synthetische Importdatei und bestehende Nutzertabelle beschränkt, da noch kein Sammlungs-/Mengenschema existiert. Externe Totalausfallprüfung, Mailzustellung und unabhängige Schlüsselverwahrung bleiben P1-14-Live-Gates.
+
+P1-06 am 2026-10-22 abgenommen: unabhängiger Review bestätigte Build, nativen SQLite-Prebuild, geschlossenen Zugriff ohne Identität und synthetische Volume-Persistenz; Details und Grenzen stehen in [Entwicklung](../entwicklung.md). Der Benutzer akzeptierte P1-06 und beauftragte P1-07. Keine Migration oder Betriebsänderung gestartet.
+
+P1-03 (2026-10-22): server-only Auth-Einstieg und Verhaltensprüfungen gegen temporäre SQLite-Dateien ergänzt. Selbstprüfung und Geräte-/Serve-Prüfung stehen noch aus; Status Review, keine Folgeaufgabe gestartet.
 
 P0-01 (Recherche vom 2026-10-21): Befunde und Quellen stehen in [Katalogabdeckung](../untersuchungen/katalog.md). Konami ist als Primärquelle für manuelle Prüfung geeignet; automatisierter Abruf und Bildnutzung sind nicht freigegeben. Ein konkreter 1st-/Unlimited-Vergleich ist durch Händler-Produktbeschreibungen für Blue-Eyes White Dragon, LOB-001, Ultra Rare belegt; dies ist keine Herstellerbestätigung und belegt keine Artworkgleichheit. YGOPRODecks Stichprobe führt für diesen Druck kein Editionsfeld. Eine vollständige Katalogabdeckung ist nicht nachgewiesen. Die folgende historische Reviewnotiz wurde durch den Freigabevermerk weiter unten abgelöst.
 
@@ -114,3 +122,86 @@ Nacharbeit P0-01 bis P0-05 am 2026-10-21: Luna ergänzte die versionierte Kompat
 P1-01 (2026-10-21): Minimales Next.js-App-Router-/TypeScript-Grundgerüst mit deutscher Startseite, exakten Pins, Lockfile, Loopback-Dev-Skript und Vitest-Smoke-Test eingerichtet. Verwendet: Node 24.22.1/npm 11.19.1. `npm ci`, `npm run typecheck`, `npm run lint`, `npm test` und `npm run build` erfolgreich; `npm run dev` auf `127.0.0.1:3000` gestartet und HTTP-GET mit Status 200 geprüft. Vitest-Peer `vite@8.3.5` wurde durch npm automatisch aufgelöst und im Lockfile festgehalten. npm meldete fünf „high“-Auditbefunde; Detailbewertung offen. Status Review bis zur unabhängigen Prüfung; keine Folgeaufgabe gestartet.
 
 Unabhängiger Review P1-01 am 2026-10-21: Hauptagent wiederholte npm ci, typecheck, lint, den einen Render-Smoke-Test und build erfolgreich unter Node 24.22.1/npm 11.19.1; Startseite im Browser geprüft. Umfang bleibt minimales Grundgerüst. Sicherheitsnachprüfung: keine npm-Auditbefunde in Produktionsabhängigkeiten; fünf High-Einträge aus einer ungepatchten braces-Lücke in der Lint-Kette. ESLint-9-EOL und Konflikt eines direkten ESLint-10-Upgrades mit Plugin-Peers sind in docs/entwicklung.md dokumentiert. Daher Review mit offenem Wartungs-/Sicherheitsbefund, keine uneingeschränkte Abnahmeempfehlung. Kein Folgepaket, Commit oder Deployment.
+
+Gezielte Nachprüfung P1-01 Lint-Abhängigkeiten am 2026-10-22: aktuelle npm-Metadaten bestätigen, dass `eslint-config-next`/`@next/eslint-plugin-next` 16.4.2 weiterhin `fast-glob` verwenden und die neuesten `eslint-plugin-react` 7.37.5, `eslint-plugin-import` 2.32.0 sowie `eslint-plugin-jsx-a11y` 6.10.2 ESLint 10 nicht deklarieren. Die aktuelle `fast-glob`-/`micromatch`-Kette führt weiterhin zu `braces@3.0.3`; kein kompatibles Upstream-Update löst beide Befunde. Manifest, Lockfile und Lintkonfiguration blieben unverändert; außer dem wiederholten Audit kein neuer Installations- oder Prüflauf. Als unbeschlossene Optionen sind eine befristete Entwicklungsausnahme für ausschließlich vertrauenswürdige Quellen oder eine separat beauftragte Lintmigration mit Regelabgleich dokumentiert. Status bleibt Review; keine Änderung an P0-05 oder Folgepaketen.
+
+Review der Lint-Nachprüfung durch den Hauptagenten am 2026-10-22: Registry-Metadaten und Advisory direkt geprüft, Audit erneut ausgeführt (fünf High-Einträge unverändert), Diff und Umfang geprüft. Quellenlinks auf exakte Versionen präzisiert und befristeten Ausnahmevorschlag konkretisiert; keine Risikoakzeptanz erteilt. Reparatur bleibt durch fehlende kompatible Upstream-Versionen offen.
+
+P1-01-Nacharbeit Lintmigration am 2026-10-22: ESLint 9 samt Next-Konfiguration wurde durch Oxlint 1.89.0 ersetzt. Aus dem gesicherten ESLint-Print-Config wurden 80/86 aktiven Regeln mit Stufe und Optionen übernommen; sechs native Regelgegenstücke fehlen und sind im Entwicklungsvertrag einzeln dokumentiert. Ein negativer Lint-Smoke-Test und die installierte Konfiguration bestätigen Hooks, Next-Async-Client, TypeScript-`any` und Accessibility-`alt`-Meldungen. `npm audit` des Hauptagenten meldete null Befunde. Der Hauptagent wiederholte unabhängig `npm ci`, Typprüfung, Lint, den Render-Smoke-Test und Produktionsbuild unter Node 24.22.1/npm 11.19.1 erfolgreich. Regelvergleich bestätigte 80 Übernahmen ohne unbeabsichtigte Stufen-/Optionsänderungen; zusätzliche Negativproben bestätigten bedingte Hooks und fehlende Effect-Abhängigkeiten. Vollständiges Audit einschließlich Entwicklungsabhängigkeiten: null Befunde. Der frühere EOL-/braces-Befund ist damit behoben; technische Abnahmeempfehlung mit den dokumentierten Regelgrenzen. Status Review; keine Folgeaufgabe gestartet.
+
+Freigabe am 2026-10-22: Der Benutzer hat P1-01 einschließlich der dokumentierten Lintregel-Unterschiede ausdrücklich abgenommen und mit „fahre fort“ P1-02 beauftragt. P1-02 umfasst ausschließlich SQLite-Anbindung, users-Schema und erste Migration mit isolierten Tests.
+
+P1-02 (2026-10-22): Exakte Paketpins aus dem Entwicklungsvertrag installiert und Lockfile gepflegt; `users`-Schema, server-only SQLite-Verbindungsfabrik und erste generierte Migration samt Metadaten ergänzt. Temporärer Integrationstest führt `drizzle-kit migrate` zweimal auf einer echten SQLite-Datei aus, prüft Datenerhalt und Unique-/CHECK-Constraints sowie `foreign_keys` je Laufzeitverbindung. Die gezielten und vollständigen Prüfungen stehen in `docs/entwicklung.md`. Selbstprüfung abgeschlossen; Status Review bis zum unabhängigen Review und zur menschlichen Abnahme. Keine Folgeaufgabe gestartet.
+
+Unabhängiger Review P1-02 am 2026-10-22: Hauptagent prüfte Schema, Migration, Testisolation und die Änderungen gegen den vor P1-02 gesicherten Stand. Frisches npm ci, typecheck, lint, zwei Tests, build und beide DB-Befehle erfolgreich. Temporäre Migration wiederholbar; ORM-Abbildung, Unique-/CHECK-Constraints und Fremdschlüssel aktiviert. Produktionsaudit 0; vollständiges Audit 4 moderate Meldungen derselben esbuild-Serve-Lücke in der Entwicklungswerkzeugkette. Betroffener Webserver wird im eingerichteten Ablauf nicht verwendet; Einordnung und erneuter Prüfpunkt in docs/entwicklung.md. Für diesen Umfang technisch zur Abnahme empfohlen, Status Review bis zur menschlichen Freigabe. Kein Folgepaket, Commit oder Deployment.
+
+Freigabe am 2026-10-22: Benutzer hat P1-02 ausdrücklich abgenommen und P1-03 beauftragt. Luna übernimmt P1-03 mit High Reasoning wegen sicherheitskritischer Identitätsprüfung; Hauptagent prüft unabhängig.
+
+P1-03 Review am 2026-10-22: Luna (High) implementierte server-only Identitätsauflösung mit zwei konfigurierten Logins, aktueller aktiver DB-Zuordnung, serverbestimmter Adminrolle und generischen Fehlern. Hauptagent prüfte unabhängig und ließ Request-Einstiegstests sowie Testisolation nachbessern. Typecheck, Lint, sieben Tests und Produktionsbuild bestanden. Keine neuen Abhängigkeiten, Routen oder App-Sitzungen. Schutz der Oberfläche/Serverfunktionen folgt erst in P1-04, Live-Serve-/Geräteprüfungen bleiben spätere Betriebsabnahmen. Technisch zur Abnahme empfohlen; Status Review, kein Folgepaket gestartet.
+
+P1-04 (2026-10-22): gemeinsame serverseitige Lese-, Schreib-, Datei- und Action-Guards ergänzt. Schreibzugriffe prüfen HTTPS-APP_ORIGIN, Host und Methode; private HTTP-Antworten erhalten `private, no-store`. Die Startseite prüft Zugriff dynamisch. Gezielte Tests, Typprüfung und Lint bestanden; vollständige Suite/Build und unabhängiger lokaler HTTP-Test noch aus. Direkte Spoofbarkeit des Serve-Headers am Upstream bleibt eine Betriebs-/Netzgrenze. Status Review, keine Folgeaufgabe gestartet.
+
+Freigabe am 2026-10-22: Benutzer hat P1-03 abgenommen und P1-04 beauftragt. Luna arbeitet wegen Zugriffsschutz und CSRF-Prüfung mit High Reasoning; Hauptagent prüft unabhängig.
+
+Unabhängiger Review P1-04 am 2026-10-22: Hauptagent wiederholte typecheck, lint, 14 Tests und build erfolgreich. Lokaler Produktionsserver mit temporärer SQLite und synthetischen Identitäten bestätigte Zugriff/Verweigerung, unmittelbare Sperrwirkung und private/no-store bei HTML sowie verweigertem RSC-Zugriff. Server danach beendet. HTML-Ablehnung bleibt HTTP 200 ohne private Inhalte; API-/Dateihelfer liefern 401/403. Origin-/Host-/Rollen- und Callbackschutz in isolierten Tests geprüft; Serve-Headerersetzung und Netzwerkisolation bleiben Live-Gates. Technisch zur Abnahme empfohlen, Status Review. Kein Folgepaket, Commit oder Deployment.
+
+Freigabe am 2026-10-22: Der Benutzer hat P1-04 ausdrücklich abgenommen, einschließlich der dokumentierten HTTP-200-Ablehnungsseite ohne geschützte Inhalte und der später ausstehenden Live-Tailscale-/Netzwerkprüfungen. P1-05 bleibt geplant; kein Folgepaket beauftragt.
+
+Auftrag am 2026-10-22: Benutzer beauftragt mit „fahre fort“ P1-05. Luna setzt das abgegrenzte Loggingpaket mit Medium Reasoning um; Hauptagent prüft sensible Daten, Request-Korrelation und Fehlerbehandlung unabhängig.
+
+P1-05 Review am 2026-10-22: serverseitiger JSON-Logger mit isoliertem AsyncLocalStorage-Kontext und UUID-Korrelation ergänzt. HTTP-Fehler enthalten dieselbe ID im Header und JSON; Startseitenablehnung zeigt sie an, vollständige Server Actions erhalten sie als serialisierbares Fehlerresultat. Auth-/Zugriffs-/Callbackereignisse schreiben nur feste erlaubte Felder. Tests decken Redaction, ID-Korrelation, Parallelität und bestehende Auth-Prüfungen ab. Typecheck, Lint, Tests (5 Dateien/20 Tests), Build und `git diff --check` bestanden; der Build zeigte nur die bekannte Next.js-Warnung zu einer externen `package.json`. Status Review; keine Folgeaufgabe gestartet.
+
+Unabhängiger Review P1-05 am 2026-10-22: Hauptagent prüfte Änderungen gegen P1-04, ließ Fehlerlog-Duplikate, Action-Fehlertransport und Testlücken korrigieren und verstärkte die asynchrone Kontextprüfung. Typecheck, Lint, 20 Tests und Produktionsbuild bestanden. Echter lokaler HTTP-Test bestätigte sichtbare ID↔Log, Geheimnisschutz für synthetische Cookies/Tokens/Client-IDs und unveränderten Zugriffsschutz mit privaten Cache-Headern. Testserver beendet. Keine offenen Implementierungsbefunde im Paketumfang; technische Abnahmeempfehlung. Systemlogging/Rotation und Live-Tailscale bleiben spätere Pakete. Status Review, kein Folgepaket oder Commit.
+
+Freigabe am 2026-10-22: Benutzer hat P1-05 mit „done, continue“ abgenommen und P1-06 beauftragt. Luna setzt den Container mit Medium Reasoning um; Hauptagent prüft Linux-/SQLite-Laufzeit, Persistenz und Netzbindung unabhängig.
+
+Unabhängiger Review P1-06 am 2026-10-22: Hauptagent prüfte den Diff zum gesicherten Paketbeginn und baute ein eigenes Image `ygh:p106-review` für Linux/amd64. SQLite-Prebuild, UID 1000, Loopback-Portbindung, ausschließlich benanntes RW-Datenvolume und fehlender Docker-Socket bestätigt. Mit initialem SQL-Schema und synthetischem Benutzer im isolierten Testvolume: HTTP-Ablehnung ohne Identität, erfolgreicher Zugriff mit Identität und no-store; Daten und SQLite-Integrität nach Neustart und Container-Neuerstellung erhalten. Typecheck, Lint, 20 Tests und Produktionsbuild bestanden. Eigene Testressourcen entfernt. Keine offenen Implementierungsbefunde im Paketumfang; technische Abnahmeempfehlung. Emulierte amd64-Prüfung ersetzt keinen nativen VPS-/Live-Tailscale-Test. Status Review, kein Folgepaket, Commit oder Deployment.
+
+Freigabe am 2026-10-22: Benutzer nimmt P1-06 auf Grundlage der erfolgreichen emulierten Linux/amd64-Funktionsprüfungen ab und beauftragt die Fortsetzung mit P1-07. Emulation ist für diese Paketprüfung ausreichend; der abschließende Test auf dem echten Zielserver bleibt Teil der Betriebsabnahme. Luna übernimmt den abgegrenzten Entwicklungsbetrieb mit Medium Reasoning, der Hauptagent prüft Hot Reload und Datentrennung unabhängig.
+
+Unabhängiger Review P1-07 am 2026-10-22: Luna (Medium) ergänzte eigenständige Entwicklungs-Compose-Datei und Dockerfile; der Hauptagent ließ non-root, lesenden Source-Mount und nutzbare Migration nachbessern. Eigener Linux/amd64-Build und Runtime-Test bestanden: UID 1000, Loopback, isoliertes Entwicklungsvolume, zweimalige Migration, Authzugriff/-ablehnung und sichtbare Source-Änderung samt Rücknahme bei unveränderter Container-ID. Produktionskonfiguration und Anwendungscode unverändert. Vorübergehend hängender erster Worker-Testcontainer später ebenfalls vollständig entfernt; finaler Reviewstack regulär gestoppt und entfernt. Details in Entwicklung. Keine offenen Implementierungsbefunde im Paketumfang; technische Abnahmeempfehlung, Status Review. Kein Folgepaket, Commit oder Deployment.
+
+Freigabe am 2026-10-22: Benutzer nimmt P1-07 mit „done, continue“ ab und beauftragt P1-08. Luna arbeitet wegen Firewall-/SSH-Sicherheitsgrenzen mit High Reasoning; der Hauptagent prüft unabhängig. Kein Auftrag zur Bestellung oder Ausführung gegen reale Server.
+
+P1-08-Selbstprüfung am 2026-10-22: Bootstrap und getrennte Firewallfinalisierung ergänzt. Bootstrap verändert die Firewall nicht und kennzeichnet den Host ausdrücklich als noch nicht privat abgesichert. Finalisierung verlangt eine frisch aufgebaute Tailscale-SSH-Verbindung als `deploy`, eine sudo-Prüfung sowie den Abgleich von SSH-Endpunkten, Tailscale-Peerstatus, Interface und SSH-Einstellung. UFW erlaubt nur TCP 22/443 auf `tailscale0`, weist sonstige eingehende Hostverbindungen ab und verlangt IPv6-Filtering. Lokale Syntax- und Fixtureprüfungen sowie offene Livegrenzen stehen in [Entwicklung](../entwicklung.md). Keine Bestellung, reale Serververbindung oder Playbookausführung; Status Review, kein Folgepaket gestartet.
+
+Unabhängiger Review P1-08 am 2026-10-22: Hauptagent korrigierte mit Luna konkrete Befunde zu Firewall-Deaktivierung bei Wiederholung, Paketkonfliktprüfung, sudo-/SSH-Kontext und zulässigen Firewallzuständen. Finale Syntaxprüfungen beider Playbooks bestanden; 14 synthetische Managementpfadprüfungen und neun lokal durch Ansible ausgewertete UFW-Zustände bestanden. Geheimnisfreies Beispielinventory, ignorierte lokale Betriebsdateien und Paketumfang geprüft. Keine offenen Implementierungsbefunde im Umfang; zur Abnahme empfohlen. Kein realer Serverzugriff; tatsächliche Wiederholbarkeit, Tailscale-Regeln, Hostfirewallwirkung und Recovery bleiben P1-14. Status Review, kein Folgepaket, Commit oder Deployment.
+
+P1-08-Nacharbeit Ubuntu 26.04 am 2026-10-22: Auf Benutzerhinweis Zielplattform auf Ubuntu 26.04 LTS amd64 umgestellt. Docker-/Tailscale-Unterstützung anhand offizieller Quellen geprüft. Luna (Medium) aktualisierte OS-Prüfung, Paketquellenformat und Ansible-Pins (Core 2.21.5, community.general 13.5.0); der Hauptagent bestätigte unabhängig beide Syntaxprüfungen, 23 Sicherheitsfixtures, drei OS-Fixtures und konfliktfreie Python-Abhängigkeiten. Nur isolierte lokale Werkzeuge installiert, keine Serverausführung. Der frühere lokale Core-2.18-Stand ist für dieses Ziel abgelöst. P1-08 bleibt Review, kein Folgepaket gestartet.
+
+Freigabe am 2026-10-22: Benutzer nimmt P1-08 einschließlich der Ubuntu-26.04-/Ansible-Nacharbeit mit „done, continue“ ab und beauftragt P1-09. Luna arbeitet wegen Tailscale-Identität, Geheimnissen und Migrationsintegrität mit High Reasoning; der Hauptagent prüft unabhängig. Kein Live-Betriebsauftrag.
+
+
+Unabhängiger Review P1-09 am 2026-10-22: Luna (High) implementierte Tailscale-Installation, explizite Zwei-Benutzer-/Adminpolicy, HTTPS-Serve und Image-Deployment mit SQLite-Sicherung und Migration. Der Hauptagent ließ konkrete Fehler korrigieren und ergänzte die abschließenden CLI-/Firewallprüfungen. Typecheck, Lint, 20 Anwendungstests, Linux/amd64-Imagebuild samt Runtime-/HTTP-Test, sechs Playbook-Syntaxprüfungen, elf Serve-Tests, neun lokale Eingabe-/Firewallfixtures sowie Deployment-Erfolgs-/Fehlerabläufe bestanden. Details und Betriebsgrenzen in [Entwicklung](../entwicklung.md). Technisch zur Abnahme empfohlen; Status Review bis zur menschlichen Freigabe. Keine Server-/Tailnetänderung, kein Folgepaket, Commit oder Deployment.
+
+
+Freigabe und Pause am 2026-10-22: Benutzer nimmt P1-09 mit „done“ ab und stoppt die Implementierung ausdrücklich. Zwischenbericht im Repository erstellt; kein Folgepaket beauftragt. Vor P1-10 ist die noch offene Abnahme von P0-06/E06 erforderlich. Die P1-09-Abnahme ersetzt weder diese Planungsfreigabe noch den Live-Betriebsauftrag/P1-14.
+
+Freigabe am 2026-10-27: Benutzer nimmt P0-06/E06 mit vereinfachtem Sicherungsfenster ab und beauftragt ausschließlich P1-10. Die App wird für einen konsistenten Snapshot von Datenbank und benötigten Dateien kurz gestoppt und vor dem verschlüsselten Upload wieder gestartet; es gibt keinen neuen Read-only-Modus. Retention: 30 tägliche plus 12 monatliche Datensnapshots; journald lokal etwa 14 Tage, 250 MB Größenbudget und 5 GB Freiplatzreserve. Externe Aufbewahrung etwa 30 Tage für alle App-Logs sowie die festgelegten System-/Sicherheitslogs. Healthchecks prüft App und freien Speicher gemeinsam sowie den täglichen Backupstatus; E-Mails gehen an Rico. Zusätzliche externe Archiv-/Repositorygrößenwarnungen entfallen. Restore wird initial und danach vierteljährlich manuell geprüft; kein automatischer Restore. Restic/B2 und Healthchecks bleiben Planungsannahmen bis zu einem Betriebsauftrag. Status P0-06 Abgenommen, P1-10 In Arbeit; keine Backup-, Alarm- oder Servereinrichtung freigegeben.
+
+
+Unabhängiger Review P1-10 am 2026-10-27: Luna (Medium) implementierte Ansible-Journalbegrenzung und journald für die Produktions-Compose-Vorlage. Hauptagent prüfte unabhängig und ließ Ubuntu-Vendor-Override, sicheren Maskierungs-Guard und persistentes Flush nachbessern. Finale Ansible-Syntax, Compose-Rendering, vier lokale Ansible-Dateifälle sowie echte Journal-Persistenz, native Zeit-/Größenrotation mit verkürzten Testlimits und wirksame finale Konfiguration im isolierten Ubuntu-26.04-amd64-Container bestanden. Anwendungsdateien und lokale Compose-Dateien unverändert; keine erneuten App-Tests. Vollständiger Host-Playbooklauf, Dienstintegration und Docker-journald auf dem echten VPS bleiben P1-14. Details und manuelle Schritte in [Entwicklung](../entwicklung.md). Keine offenen Implementierungsbefunde; technische Abnahmeempfehlung, Status Review. Kein Folgepaket, Commit oder Live-Deployment.
+
+Freigabe P1-10 am 2026-10-27: Benutzer bestätigt den geprüften Umfang mit „done, continue“ und beauftragt ausschließlich P1-11. P1-10 ist Abgenommen; keine Live-Serveränderung wurde ausgeführt.
+
+P1-11 (2026-10-27): Helper im App-Image nutzt `better-sqlite3`/SQLite Online Backup API für `/data/collection.sqlite`, prüft die erstellte Datei und kopiert nur das optionale `/data/imports`-Verzeichnis; unbekannte `/data`-Dateien, Predeploy-Backups und Secrets werden nicht eingesammelt. Der Hostrunner sperrt mit `flock`, stoppt den exakten laufenden Container kurz, verwendet dessen Image-Digest und benanntes Volume für den Snapshot, startet denselben Container vor Manifestabschluss, Logexport und Restic. Restic schreibt getrennte Tags für Appdaten und abgeschlossene UTC-Journald-Fenster. Der Ansible-Timer ist auf 03:15 UTC gesetzt. Retention bleibt nach Installation standardmäßig deaktiviert, bis ein root-only `--retention-dry-run` geprüft und die explizite Konfiguration aktiviert wurde. 0 = vollständiger Erfolg, 1 = Backup-/Ziel-/Prüffehler (einschließlich Restic 3), 2 = App konnte nicht wieder gestartet werden; Alarme und Restore bleiben P1-12. Die lokalen Snapshottests und der unabhängige Ubuntu-/Restic-Test liefen mit synthetischen Daten. Ansible wurde nur syntaktisch/rendernd geprüft; kein echter Zielhost, B2-Konto, Timerlauf, Alarm oder Restore. Details in [Entwicklung](../entwicklung.md) und [Betriebsuntersuchung](../untersuchungen/betrieb.md). Am 2026-10-27 durch den Benutzer abgenommen; kein Folgepaket, Commit oder Live-Deployment.
+
+
+Unabhängiger Abschlussreview P1-11 am 2026-10-27: Hauptagent prüfte Lunas High-Reasoning-Umsetzung und ließ gezielte Fehlerkorrekturen vornehmen. Typecheck/Lint, 23 lokale Tests, sechs separat ausgeführte Linux-Tests, Linux/amd64-Imagebuild und echter Snapshothelper mit read-only Datenquelle/UID1000 bestanden. Reales lokales verschlüsseltes Restic-Repository auf Ubuntu 26.04 bestätigte Uploads, Datenprüfung, Exit-3-Erhalt guter Snapshots, verhindertes Forget bei Fehlern und selektive Retention. Unterbrochener Lock-Warter erhält fremdes aktives Staging. Ansible-Syntax/Render und systemd-Unitvalidierung bestanden. Infrastruktur vom Docker-Build-Kontext ausgeschlossen. Zielhost, B2, tatsächliche Timer-/Dienstintegration, Alarme und Restore bleiben ungeprüft. Details und manuelle Schritte in [Entwicklung](../entwicklung.md). Keine offenen Implementierungsbefunde; technisch zur Abnahme empfohlen, Status Review bis Benutzerfreigabe. Keine Folgeaufgabe und kein Live-Betriebsauftrag.
+
+Unabhängiger Abschlussreview P1-12 am 2026-10-27: Hauptagent prüfte Lunas Umsetzung und veranlasste gezielte Korrekturen an Restore-Verifikation, Leserechten und kombinierten Alarmfehlerfällen. 24 lokale Node-Tests, sechs separate Linux-Tests und 15 Python-Tests bestanden; Typecheck, Lint, amd64-Imagebuild, echter synthetischer Restic-Restore, HTTP-Liveness, Ansible-Syntax/Render und systemd-Unitvalidierung ebenfalls. Details, Dateiliste und manuelle Prüfungen in [Entwicklung](../entwicklung.md). Keine offenen Implementierungsbefunde; technisch zur Abnahme empfohlen. Status Review bis Benutzerfreigabe. Externe Alarmzustellung, echte unabhängige Recoverykopie und vollständige Zielhostintegration bleiben offen; kein Livebetrieb und kein P1-13 beauftragt.
+
+P1-12 am 2026-10-27 durch den Benutzer abgenommen („die noch offenen punkte wurden dokumentiert? falls ja dann done, continue“). Die dokumentierten Live-Gates bleiben für P1-14 offen: externe Alarmzustellung, unabhängige Recoverykopie und vollständige Zielhostintegration. Es wurde dadurch kein Livebetrieb freigegeben.
+
+P1-13 am 2026-10-27 zur unabhängigen Prüfung übergeben. Responsive deutsche Hülle, Home-Navigation nur zum vorhandenen Einstieg, Next.js-Manifest und eigene lokale PNG-Icons; kein Service Worker, privater Offlinecache, Authumbau oder Logout. Gezielte Tests, Typecheck, Lint und Produktionsbuild bestanden. Echte iPhone-/Android-Installation ist ungeprüft; Details und manuelle Schritte stehen in [Entwicklung](../entwicklung.md). Kein Folgepaket gestartet.
+
+Unabhängiger Abschlussreview P1-13 am 2026-10-27: Typecheck, Lint, 25 lokale Tests und finaler amd64-Produktionsbuild bestanden. Root prüfte Manifest/PNG-Auslieferung, Zugriffsschutz und private No-store-Seitenantworten über echtes lokales HTTP sowie Chromium-Ansichten bei 320/390/1440 Pixeln einschließlich Tastatur-Sprunglink und fehlender SW-/Cache-Storage-Nutzung. Footer-Kontrast nach Review korrigiert. WebKit-Prüfung wegen lokalem Timeout nicht abgeschlossen; keine echte iPhone-/Android-Installation geprüft. Details und manuelle Schritte in [Entwicklung](../entwicklung.md). Lokale Umsetzung zur Abnahme empfohlen, Status Review. P1-14 und Livebetrieb nicht gestartet.
+
+
+Freigabe P1-13 am 2026-10-28: Der Benutzer nahm P1-13 ab. Die dokumentierten Grenzen bleiben bestehen: WebKit-Prüfung nicht abgeschlossen, echte iPhone-/Android-Installation und Nutzung über Tailscale/HTTPS ungeprüft. P1-13 ist Abgenommen; dies startet P1-14 nicht.
+
+P1-14 am 2026-10-28 ausdrücklich zurückgestellt: Der Benutzer möchte das Paket später bearbeiten. Es gibt noch keinen echten Server und keinen Betriebsauftrag; P1-14 bleibt Geplant. Externe Alarmzustellung, unabhängige Recoverykopie, vollständiger Restore und weitere Zielhostprüfungen bleiben Gates vor der Nutzung echter Sammlungsdaten.
+
+P1-15 am 2026-10-28: Der Benutzer legte das bestehende private GitHub-Repository `GrothRico/ygh` fest. Ein lokales `git remote` ist nicht konfiguriert; es wurde keines angelegt. Der Workflow wurde lokal geprüft; ein Hosted-Run fand nicht statt. Geänderte Dateien, konkrete Prüfungen und offene GitHub-seitige Nachweise stehen in [Entwicklung](../entwicklung.md). Status Review bis zum unabhängigen Review und zur Benutzerabnahme.
+
+P1-15-Voraussetzung am 2026-10-28 geprüft: `git remote -v` liefert kein Remote. Gemäß Paketbeschreibung bleibt P1-15 daher Geplant; es wurde keine CI implementiert. Der Benutzer hat anschließend die Verwendung eines bestehenden privaten Repositories gewählt. Anbieter und Repository-URL sind noch nicht mitgeteilt; keine Remote-Konfiguration oder CI-Implementierung vorgenommen.

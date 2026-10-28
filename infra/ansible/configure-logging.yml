@@ -1,0 +1,116 @@
+---
+- name: Configure bounded persistent system and application logs
+  hosts: tailnet
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Require Ubuntu 26.04 LTS on amd64
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+          - ansible_distribution_version is version("26.04", "==")
+          - ansible_architecture == "x86_64"
+        fail_msg: Logging configuration supports only Ubuntu 26.04 LTS amd64.
+
+    - name: Read installed packages before applying the syslog policy
+      ansible.builtin.package_facts:
+        manager: auto
+
+  tasks:
+    - name: Ensure the journald drop-in directory exists
+      ansible.builtin.file:
+        path: /etc/systemd/journald.conf.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Ensure persistent journal storage exists
+      ansible.builtin.file:
+        path: /var/log/journal
+        state: directory
+        owner: root
+        group: systemd-journal
+        mode: "2755"
+      notify: Restart systemd-journald
+
+    - name: Inspect the journald vendor syslog drop-in override path
+      ansible.builtin.stat:
+        path: /etc/systemd/journald.conf.d/syslog.conf
+        follow: false
+      register: journald_syslog_override
+
+    - name: Refuse to overwrite an existing journald syslog override
+      ansible.builtin.assert:
+        that:
+          - >-
+            (not journald_syslog_override.stat.exists and
+            not (journald_syslog_override.stat.islnk | default(false))) or
+            ((journald_syslog_override.stat.islnk | default(false)) and
+            journald_syslog_override.stat.lnk_target == '/dev/null')
+        fail_msg: >-
+          /etc/systemd/journald.conf.d/syslog.conf already exists and is not the
+          expected /dev/null mask. Review this host's journald policy before continuing.
+
+    - name: Mask the vendor syslog forwarding drop-in
+      ansible.builtin.file:
+        src: /dev/null
+        dest: /etc/systemd/journald.conf.d/syslog.conf
+        state: link
+        force: false
+      notify: Restart systemd-journald
+
+    - name: Install YGH journal retention limits
+      ansible.builtin.template:
+        src: templates/60-ygh-retention.conf.j2
+        dest: /etc/systemd/journald.conf.d/60-ygh-retention.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart systemd-journald
+
+    - name: Apply journal changes before stopping the duplicate syslog service
+      ansible.builtin.meta: flush_handlers
+
+    - name: Ensure the persistent journal has received volatile startup entries
+      ansible.builtin.command:
+        argv: [journalctl, --flush]
+      changed_when: false
+
+    - name: Ensure Ubuntu logrotate and its timer are active for distribution file logs
+      ansible.builtin.apt:
+        name: logrotate
+        state: present
+
+    - name: Enable the Ubuntu logrotate timer
+      ansible.builtin.systemd_service:
+        name: logrotate.timer
+        enabled: true
+        state: started
+
+    - name: Validate the installed distribution logrotate configuration without rotating files
+      ansible.builtin.command:
+        argv: [logrotate, --debug, /etc/logrotate.conf]
+      changed_when: false
+
+    - name: Stop duplicate rsyslog file collection on the dedicated VPS
+      ansible.builtin.systemd_service:
+        name: rsyslog.service
+        enabled: false
+        state: stopped
+      when: "'rsyslog' in ansible_facts.packages"
+
+    - name: Explain remaining distribution-owned file logs
+      ansible.builtin.debug:
+        msg: >-
+          Journald owns system, SSH/auth, sudo, Docker, and tailscaled service logs.
+          Separate package logs such as apt/cloud-init remain under Ubuntu logrotate
+          policy and are outside the journal size budget; this does not create a
+          global file-size cap.
+
+  handlers:
+    - name: Restart systemd-journald
+      ansible.builtin.systemd_service:
+        name: systemd-journald.service
+        state: restarted

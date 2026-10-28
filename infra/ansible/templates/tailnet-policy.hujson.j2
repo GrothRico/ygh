@@ -1,0 +1,28 @@
+{
+  "tagOwners": {
+    "tag:ygh-server": [{{ ygh_tailscale_rico_login | to_json }}]
+  },
+  "grants": [
+    {
+      "src": [{{ ygh_tailscale_rico_login | to_json }}],
+      "dst": ["tag:ygh-server"],
+      "ip": ["tcp:22"]
+    },
+    {
+      "src": [
+        {{ ygh_tailscale_rico_login | to_json }},
+        {{ ygh_tailscale_second_user_login | to_json }}
+      ],
+      "dst": ["tag:ygh-server"],
+      "ip": ["tcp:443"]
+    }
+  ],
+  "ssh": [
+    {
+      "action": "accept",
+      "src": [{{ ygh_tailscale_rico_login | to_json }}],
+      "dst": ["tag:ygh-server"],
+      "users": ["deploy"]
+    }
+  ]
+}

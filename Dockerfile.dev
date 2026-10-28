@@ -1,0 +1,19 @@
+# Development-only image; the production Dockerfile stays standalone and minimal.
+FROM node:24.22.1-bookworm-slim
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
+
+COPY --chown=node:node next.config.ts tsconfig.json next-env.d.ts drizzle.config.ts ./
+
+RUN mkdir -p /data \
+  && chown node:node /app /data
+
+ENV NODE_ENV=development \
+    NEXT_TELEMETRY_DISABLED=1 \
+    DATABASE_PATH=/data/collection-dev.sqlite
+
+EXPOSE 3000
+USER node
+CMD ["./node_modules/.bin/next", "dev", "--hostname", "0.0.0.0"]

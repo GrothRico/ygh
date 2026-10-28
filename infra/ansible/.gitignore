@@ -1,0 +1,10 @@
+# Local inventories and encrypted variables may contain operational details.
+/inventory/hosts.yml
+/inventory/hosts.yaml
+/inventory/hosts.local.yml
+/inventory/hosts.local.yaml
+/inventory/host_vars/
+/inventory/group_vars/*
+!/inventory/group_vars/all.yml
+/vault-password-file
+__pycache__/

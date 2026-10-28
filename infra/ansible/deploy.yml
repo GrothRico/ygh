@@ -1,0 +1,223 @@
+---
+- name: Deploy a verified local YGH image archive
+  hosts: tailnet
+  become: true
+  gather_facts: false
+  serial: 1
+
+  pre_tasks:
+    - name: Require deployment inputs with immutable image identity
+      ansible.builtin.assert:
+        that:
+          - ansible_user == ygh_deploy_user
+          - ygh_deploy_user == "deploy"
+          - ygh_image_archive is defined
+          - ygh_image_archive_sha256 is defined
+          - ygh_image_archive_sha256 is match('^[a-f0-9]{64}$')
+          - ygh_image_ref is defined
+          - ygh_image_id is defined
+          - ygh_image_id is match('^sha256:[a-f0-9]{64}$')
+          - ygh_tailscale_rico_login is defined
+          - ygh_tailscale_second_user_login is defined
+          - ygh_tailscale_rico_login != ygh_tailscale_second_user_login
+          - ygh_tailscale_rico_login is string
+          - ygh_tailscale_rico_login | length > 0
+          - ygh_tailscale_rico_login == ygh_tailscale_rico_login | trim
+          - ygh_tailscale_rico_login is not search('[,\r\n]')
+          - ygh_tailscale_second_user_login is string
+          - ygh_tailscale_second_user_login | length > 0
+          - ygh_tailscale_second_user_login == ygh_tailscale_second_user_login | trim
+          - ygh_tailscale_second_user_login is not search('[,\r\n]')
+          - ygh_second_user_display_name is defined
+          - ygh_second_user_display_name is string
+          - ygh_second_user_display_name | trim | length > 0
+          - ygh_initialize_new_database | default(false) is boolean
+          - ygh_app_origin is match('^https://[^/]+$')
+          - "'\\n' not in ygh_app_origin"
+          - "'\\n' not in ygh_tailscale_rico_login"
+          - "'\\n' not in ygh_tailscale_second_user_login"
+          - "'\\n' not in ygh_second_user_display_name"
+        fail_msg: >-
+          Set the deploy user, local archive checksum, expected image ID, two distinct
+          login names, and the private HTTPS origin in the inventory.
+
+    - name: Require an archive whose local checksum matches the declared value
+      ansible.builtin.stat:
+        path: "{{ ygh_image_archive }}"
+        checksum_algorithm: sha256
+      delegate_to: localhost
+      become: false
+      register: local_image_archive
+
+    - name: Verify the archive checksum before transport
+      ansible.builtin.assert:
+        that:
+          - local_image_archive.stat.exists
+          - local_image_archive.stat.isreg
+          - local_image_archive.stat.checksum == ygh_image_archive_sha256
+        fail_msg: The local Docker image archive is missing or its checksum does not match.
+
+    - name: Confirm Docker Engine is at least version 28
+      ansible.builtin.command:
+        argv: [docker, version, --format, "{{ '{{' }}.Server.Version{{ '}}' }}"]
+      register: docker_server_version
+      changed_when: false
+      failed_when: >-
+        docker_server_version.rc != 0 or
+        docker_server_version.stdout is not version("28.0", ">=")
+
+    - name: Derive a content-addressed image tag from the expected image ID
+      ansible.builtin.set_fact:
+        ygh_compose_image: "ygh:{{ ygh_image_id | regex_replace('^sha256:', 'sha256-') }}"
+
+    - name: Read the enrolled Tailscale DNS name
+      ansible.builtin.command:
+        argv: [tailscale, status, --json]
+      register: tailscale_status
+      changed_when: false
+      no_log: true
+
+    - name: Require the configured application origin to match this server's Serve name
+      ansible.builtin.assert:
+        that:
+          - >-
+            ygh_app_origin == 'https://' +
+            ((tailscale_status.stdout | from_json).Self.DNSName | regex_replace('\\.$', ''))
+        fail_msg: The configured private application origin does not match this server's Tailscale DNS name.
+      no_log: true
+
+  tasks:
+    - name: Ensure the persistent deployment directory exists
+      ansible.builtin.file:
+        path: "{{ ygh_persistent_root }}"
+        state: directory
+        owner: root
+        group: "{{ ygh_deploy_user }}"
+        mode: "0750"
+
+    - name: Ensure the local release archive directory exists
+      ansible.builtin.file:
+        path: "{{ ygh_persistent_root }}/releases"
+        state: directory
+        owner: root
+        group: "{{ ygh_deploy_user }}"
+        mode: "0750"
+
+    - name: Copy the image archive to the server
+      ansible.builtin.copy:
+        src: "{{ ygh_image_archive }}"
+        dest: "{{ ygh_persistent_root }}/releases/ygh-image.tar"
+        owner: root
+        group: "{{ ygh_deploy_user }}"
+        mode: "0640"
+
+    - name: Verify the transferred archive SHA-256 before loading it
+      ansible.builtin.stat:
+        path: "{{ ygh_persistent_root }}/releases/ygh-image.tar"
+        checksum_algorithm: sha256
+      register: remote_image_archive
+
+    - name: Verify the transferred archive checksum matches the declared SHA-256
+      ansible.builtin.assert:
+        that:
+          - remote_image_archive.stat.exists
+          - remote_image_archive.stat.checksum == ygh_image_archive_sha256
+        fail_msg: The transferred Docker image archive checksum does not match.
+
+    - name: Load the image archive without pulling from a registry
+      ansible.builtin.command:
+        argv:
+          - docker
+          - load
+          - --input
+          - "{{ ygh_persistent_root }}/releases/ygh-image.tar"
+      register: loaded_image
+      changed_when: true
+
+    - name: Inspect the loaded image by its requested reference
+      ansible.builtin.command:
+        argv: [docker, image, inspect, --format, "{{ '{{' }}.Id{{ '}}' }}", "{{ ygh_image_ref }}"]
+      register: loaded_image_id
+      changed_when: false
+      failed_when: loaded_image_id.rc != 0 or loaded_image_id.stdout != ygh_image_id
+
+    - name: Apply the locally verified image tag
+      ansible.builtin.command:
+        argv: [docker, image, tag, "{{ ygh_image_id }}", "{{ ygh_compose_image }}"]
+      register: tag_image
+      changed_when: true
+
+    - name: Verify the locally assigned image tag
+      ansible.builtin.command:
+        argv: [docker, image, inspect, --format, "{{ '{{' }}.Id{{ '}}' }}", "{{ ygh_compose_image }}"]
+      register: immutable_image_id
+      changed_when: false
+      failed_when: immutable_image_id.rc != 0 or immutable_image_id.stdout != ygh_image_id
+
+    - name: Verify the in-image Drizzle migrator is loadable before stopping the app
+      ansible.builtin.command:
+        argv:
+          - docker
+          - run
+          - --rm
+          - --entrypoint
+          - node
+          - --workdir
+          - /app
+          - "{{ ygh_image_id }}"
+          - --input-type=module
+          - -e
+          - "await import('drizzle-orm/better-sqlite3/migrator'); await import('better-sqlite3')"
+      changed_when: false
+
+    - name: Create the persistent Docker volume if needed
+      ansible.builtin.command:
+        argv: [docker, volume, create, ygh-app-data]
+      register: app_data_volume
+      changed_when: app_data_volume.stdout == "ygh-app-data"
+
+    - name: Install the verified image Compose deployment file
+      ansible.builtin.template:
+        src: templates/compose.deploy.yaml.j2
+        dest: "{{ ygh_persistent_root }}/compose.yaml"
+        owner: root
+        group: root
+        mode: "0600"
+      diff: false
+      no_log: true
+
+    - name: Install the maintenance-locked database deployment sequence
+      ansible.builtin.copy:
+        src: files/ygh-deploy-database.sh
+        dest: /usr/local/sbin/ygh-deploy-database
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Serialize the application stop, migration, and start with backups
+      ansible.builtin.command:
+        argv:
+          - flock
+          - --exclusive
+          - /run/lock/ygh-maintenance.lock
+          - /usr/local/sbin/ygh-deploy-database
+          - "{{ ygh_persistent_root }}"
+          - "{{ 'true' if ygh_initialize_new_database | default(false) else 'false' }}"
+      changed_when: true
+
+    - name: Require an HTTP response from the loopback application
+      ansible.builtin.uri:
+        url: http://127.0.0.1:3000/
+        status_code: 200
+        return_content: false
+      register: application_response
+      retries: 12
+      delay: 5
+      until: application_response.status == 200
+
+    - name: Report successful deployment without printing user identities
+      ansible.builtin.debug:
+        msg: >-
+          The expected image is running. Database migrations completed, and any
+          pre-deployment database backup remains in the persistent data volume.
+
