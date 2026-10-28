@@ -39,7 +39,10 @@ jobs:
         run: npm run lint
 
       - name: Node tests
-        run: npm test
+        run: npm test -- --exclude scripts/backup-runner.test.ts
+
+      - name: Backup host-runner tests
+        run: sudo env "PATH=$PATH" CI=true npm test -- scripts/backup-runner.test.ts
 
       - name: Python tests
         run: |
