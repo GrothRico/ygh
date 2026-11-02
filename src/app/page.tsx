@@ -1,10 +1,12 @@
 import { requireReadAccess } from "../server/access";
-import { withRequestContext } from "../server/logging";
+import { MAX_SEARCH_RESULTS, searchCards } from "../server/catalog/search";
+import { logEvent, withRequestContext } from "../server/logging";
+import { CardArtwork } from "./CardArtwork";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function HomePage() {
+export default async function HomePage({ searchParams = Promise.resolve({}) }: { searchParams?: Promise<{ q?: string | string[] }> } = {}) {
   return withRequestContext(async (requestId) => {
     let accessMessage: string | null = null;
     let currentUser: Awaited<ReturnType<typeof requireReadAccess>> | null = null;
@@ -23,6 +25,20 @@ export default async function HomePage() {
           <p>Request-ID: {requestId}</p>
         </main>
       );
+    }
+
+    const params = await searchParams;
+    const query = (Array.isArray(params.q) ? params.q[0] : params.q ?? "").slice(0, 100);
+    const databasePath = process.env.DATABASE_PATH;
+    let results: ReturnType<typeof searchCards> = [];
+    let searchUnavailable = false;
+    if (query && databasePath) {
+      try {
+        results = searchCards(databasePath, query);
+      } catch {
+        searchUnavailable = true;
+        logEvent({ event: "request.failed", status: 500, durationMs: 0, reason: "internal" });
+      }
     }
 
     return (
@@ -47,15 +63,50 @@ export default async function HomePage() {
           <section className="welcome" aria-labelledby="welcome-title">
             <p className="eyebrow">Deine Sammlung</p>
             <h1 id="welcome-title">Deine Yu-Gi-Oh!-Sammlung</h1>
-            <p className="intro">Der private Überblick für eure gemeinsame Kartensammlung.</p>
-            <p className="connection-note">{currentUser.authMode === "local" ? "Lokaler Entwicklungszugang auf diesem Rechner." : "Zum Verwenden brauchst du eine Internetverbindung und die freigegebene Tailscale-Verbindung."}</p>
+            <p className="intro">Finde Karten über deutschen oder englischen Namen und gedruckte Codes.</p>
           </section>
-          <section className="empty-state" aria-labelledby="ready-title">
-            <div className="empty-icon" aria-hidden="true">✦</div>
-            <div>
-              <h2 id="ready-title">Der Sammlungsbereich ist bereit</h2>
-              <p>Weitere Sammlungsansichten erscheinen hier, sobald sie verfügbar sind.</p>
-            </div>
+          <section className="catalog-search" aria-labelledby="search-title">
+            <h2 id="search-title">Kartensuche</h2>
+            <form action="/" method="get" role="search">
+              <label htmlFor="card-query">Kartenname oder gedruckter Code</label>
+              <div className="search-row">
+                <input id="card-query" name="q" type="search" maxLength={100} defaultValue={query} autoComplete="off" />
+                <button type="submit">Suchen</button>
+              </div>
+            </form>
+            {query && (
+              <div className="search-results" aria-live="polite">
+                <h3>Treffer für „{query}“</h3>
+                {searchUnavailable ? <p role="status">Die Kartensuche ist derzeit nicht verfügbar. Request-ID: {requestId}</p> : results.length === 0 ? <p>Keine Karten gefunden.</p> : <p>{results.length === MAX_SEARCH_RESULTS ? `${results.length} oder mehr Treffer` : `${results.length} Treffer`}</p>}
+                {!searchUnavailable && <p className="image-note">Kartenbilder zeigen die englische Quellenabbildung; sie bestätigen keine konkrete Druckvariante.</p>}
+                <ul>
+                  {!searchUnavailable && results.map((card) => {
+                    const label = card.nameDe ?? card.nameEn ?? "Karte";
+                    return (
+                      <li className="search-card" key={card.id}>
+                        <CardArtwork cardId={card.sourceId ? card.id : null} label={label} />
+                        <div className="search-card-content">
+                          <h4>{card.nameDe ?? card.nameEn}</h4>
+                          {card.nameDe && card.nameEn && <p>{card.nameEn}</p>}
+                          {card.printings.length > 0 ? (
+                            <ul className="printing-list">
+                              {card.printings.map((printing, index) => (
+                                <li key={`${printing.kind}-${printing.variantId ?? printing.code}-${index}`}>
+                                  <strong>{printing.code}</strong> · {printing.setName} · {printing.rarity}
+                                  {printing.kind === "confirmed" ? ` · ${printing.language === "de" ? "Deutsch" : printing.language === "en" ? "Englisch" : printing.language} · ${printing.edition === "first" ? "1st Edition" : printing.edition === "unlimited" ? "Unlimited" : "Nicht anwendbar"}` : " · Druckangabe nicht bestätigt"}
+                                  {printing.kind === "confirmed" && printing.artworkKey !== "default" ? ` · Artwork ${printing.artworkKey}` : ""}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : <p>Keine Druckangaben gespeichert.</p>}
+                          {card.morePrintings > 0 && <p>Weitere Druckangaben: {card.morePrintings}</p>}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </section>
         </main>
         <footer className="app-footer">YGH · private Sammlungsverwaltung</footer>

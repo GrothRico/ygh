@@ -21,6 +21,7 @@ function openMigratedCatalog(databasePath: string): Database.Database {
     "sets",
     "source_printing_observations",
     "catalog_sync_status",
+    "catalog_source_payloads",
   ];
   const existingTables = new Set(
     (database.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as Array<{ name: string }>).map((row) => row.name),

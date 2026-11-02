@@ -1,7 +1,7 @@
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import Database from "better-sqlite3";
 import { createSnapshot, finalizeManifest } from "./backup-snapshot";
 
@@ -17,7 +17,7 @@ afterEach(async () => {
   await Promise.all(temporaryDirectories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })));
 });
 
-it("creates an integrity-checked Online Backup API snapshot while SQLite writes continue", async () => {
+it("creates an integrity-checked Online Backup API snapshot during a concurrent SQLite write", async () => {
   const root = await createTemporaryDirectory();
   const sourcePath = join(root, "live.sqlite");
   const snapshotDirectory = join(root, "stage", "app");
@@ -34,24 +34,40 @@ it("creates an integrity-checked Online Backup API snapshot while SQLite writes 
     database.prepare("INSERT INTO ledger (id, value) VALUES (?, ?)").run(id, `synthetic-${id}`);
     database.prepare("UPDATE totals SET entry_count = entry_count + 1 WHERE id = 1").run();
   });
-  for (let id = 1; id <= 20_000; id += 1) writeEntry(id);
+  database.transaction(() => {
+    for (let id = 1; id <= 20_000; id += 1) writeEntry(id);
+  })();
 
   const importsDirectory = join(root, "imports");
   await mkdir(importsDirectory);
   await writeFile(join(importsDirectory, "original.csv"), "synthetic import\n");
 
-  const writePromises: Array<Promise<void>> = [];
   let nextId = 20_001;
-  const writer = setInterval(() => {
-    writesDuringBackup += 1;
-    writePromises.push(Promise.resolve().then(() => writeEntry(nextId++)));
-  }, 1);
-  let writesDuringBackup = 0;
+  let writeInjectedDuringPartialBackup = false;
+  const originalBackup = Database.prototype.backup;
+  const backupSpy = vi.spyOn(Database.prototype, "backup").mockImplementation(function (
+    this: Database.Database,
+    destinationFile,
+    options,
+  ) {
+    if (!options?.progress) return originalBackup.call(this, destinationFile, options);
+    const progressHandler = options.progress;
+    return originalBackup.call(this, destinationFile, {
+      ...options,
+      progress: (progress) => {
+        const partialCopyIsActive = progress.remainingPages < progress.totalPages && progress.remainingPages > 0;
+        if (!writeInjectedDuringPartialBackup && partialCopyIsActive) {
+          // Keep the real backup active while a separate SQLite connection commits one write.
+          writeEntry(nextId++);
+          writeInjectedDuringPartialBackup = true;
+        }
+        return progressHandler(progress);
+      },
+    });
+  });
   try {
     const info = await createSnapshot(sourcePath, snapshotDirectory, importsDirectory);
-    clearInterval(writer);
-    await Promise.all(writePromises);
-    expect(writesDuringBackup).toBeGreaterThan(0);
+    expect(writeInjectedDuringPartialBackup).toBe(true);
     expect(info.integrityCheck).toBe("ok");
     expect(info.importFileCount).toBe(1);
     expect(info.migrations).toEqual([{ hash: "synthetic-migration-hash", createdAt: 1760000000 }]);
@@ -78,7 +94,7 @@ it("creates an integrity-checked Online Backup API snapshot while SQLite writes 
     expect(manifest).not.toHaveProperty("password");
     expect(manifest).not.toHaveProperty("entries");
   } finally {
-    clearInterval(writer);
+    backupSpy.mockRestore();
     database.close();
   }
 });

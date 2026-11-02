@@ -1,0 +1,63 @@
+---
+- name: Configure the scheduled YGH catalog refresh
+  hosts: tailnet
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Require the supported Ubuntu host
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+          - ansible_distribution_version is version("26.04", "==")
+          - ansible_architecture == "x86_64"
+        fail_msg: The catalog refresh is prepared for Ubuntu 26.04 amd64 only.
+
+  tasks:
+    - name: Ensure the maintenance lock directory exists
+      ansible.builtin.file:
+        path: /run/lock
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Install the catalog refresh host runner
+      ansible.builtin.copy:
+        src: files/ygh-catalog-update.sh
+        dest: /usr/local/sbin/ygh-catalog-update
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Install the catalog refresh service
+      ansible.builtin.template:
+        src: templates/ygh-catalog-update.service.j2
+        dest: /etc/systemd/system/ygh-catalog-update.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Install the daily catalog refresh timer
+      ansible.builtin.template:
+        src: templates/ygh-catalog-update.timer.j2
+        dest: /etc/systemd/system/ygh-catalog-update.timer
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Apply unit files before starting the timer
+      ansible.builtin.meta: flush_handlers
+
+    - name: Enable the daily catalog refresh timer
+      ansible.builtin.systemd_service:
+        name: ygh-catalog-update.timer
+        enabled: true
+        state: started
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd_service:
+        daemon_reload: true

@@ -19,6 +19,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", ".next/types/**/*.ts", ".next/dev/types/**/*.ts", "**/*.ts", "**/*.tsx", "scripts/catalog-sync.mts"],
+  "include": ["next-env.d.ts", ".next/types/**/*.ts", ".next/dev/types/**/*.ts", "**/*.ts", "**/*.tsx", "scripts/catalog-sync.mts", "scripts/catalog-images.mts"],
   "exclude": ["node_modules"]
 }

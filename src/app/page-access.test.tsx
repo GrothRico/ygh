@@ -27,7 +27,7 @@ describe("Startseitenzugriff", () => {
     const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
     try {
-      const markup = renderToStaticMarkup(await HomePage());
+      const markup = renderToStaticMarkup(await HomePage({ searchParams: Promise.resolve({ q: "private-sentinel" }) }));
       const requestId = markup.match(/Request-ID: ([0-9a-f-]{36})/)?.[1];
       const logs = [...stdout.mock.calls, ...stderr.mock.calls].map(([chunk]) => String(chunk)).join("");
 

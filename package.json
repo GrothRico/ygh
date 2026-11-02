@@ -13,7 +13,8 @@
     "build": "next build",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "catalog:sync": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/catalog-sync.mts"
+    "catalog:sync": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/catalog-sync.mts",
+    "catalog:images": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/catalog-images.mts"
   },
   "dependencies": {
     "better-sqlite3": "13.0.3",

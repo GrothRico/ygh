@@ -1,0 +1,22 @@
+[Unit]
+Description=Refresh the YGH card catalog and missing image cache
+Requires=docker.service
+Wants=network-online.target
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+UMask=0077
+ExecStart=/usr/local/sbin/ygh-catalog-update
+TimeoutStartSec=12h
+TimeoutStopSec=2min
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/run/lock
+RestrictAddressFamilies=AF_UNIX
+StandardOutput=journal
+StandardError=journal

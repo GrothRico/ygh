@@ -16,6 +16,7 @@ build
 **/*.test.*
 **/__tests__/
 coverage
+**/card-images/
 *.log
 tmp
 temp

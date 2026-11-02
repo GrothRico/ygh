@@ -1,6 +1,6 @@
 # Aufgabenindex
 
-Stand geprüft: 2. November 2026. **P1-16 und P2-01 sind abgenommen. P2-02 wurde umgesetzt und unabhängig kritisch geprüft; die Abnahme dieses Ergebnisses steht aus. Der Benutzer hat P2-03 beauftragt; dessen Beginn wartet auf die Abnahme von P2-02.** Die früher gleichzeitig ausgesprochene P2-02-Abnahme konnte keinem implementierten Ergebnis zugeordnet werden und ist keine Abnahme dieser Umsetzung. P1-14 bleibt zurückgestellt; kein echter Server oder Betriebsauftrag. Die Tabelle ist die einzige laufende Paketstatusliste. [Dokumentationsübersicht](../README.md).
+Stand geprüft: 2. November 2026. **P1-16, P2-01 und P2-02 sind abgenommen. P2-03 einschließlich der ausdrücklich beauftragten regelmäßigen Katalog-/Bildaktualisierung und Speicherung der vier vollständigen letzten JSON-Antworten ist umgesetzt; die menschliche Abnahme steht aus.** P1-14 bleibt zurückgestellt; kein echter Server oder Betriebsauftrag. Die Tabelle ist die einzige laufende Paketstatusliste. [Dokumentationsübersicht](../README.md).
 
 Für ein günstiges Modell: eine ID pro Chat/Durchgang. Der [Startprompt](../arbeit-mit-llm.md) und [AGENTS.md](../../AGENTS.md) gelten für jedes Paket. Offene Architekturentscheidungen zuerst klären; das Modell soll sie nicht während einer Implementierung improvisieren.
 
@@ -40,8 +40,8 @@ Für ein günstiges Modell: eine ID pro Chat/Durchgang. Der [Startprompt](../arb
 | P1-15 | [Automatische Repository-Prüfungen](m1.md) | P1-06 | Abgenommen |
 | P1-16 | [Lokaler Entwicklungszugang ohne Tailscale](m1.md#p1-16-lokaler-entwicklungszugang-ohne-tailscale) | P1-04, P1-07, P1-13, E09 | Abgenommen |
 | P2-01 | [Katalogschema und Beispieldaten](m2.md) | P1-02, P0-01 | Abgenommen |
-| P2-02 | [Katalogdaten synchronisieren](m2.md) | P2-01 | Review |
-| P2-03 | [Bilder und Kartensuche](m2.md) | P2-02, P1-04 | Geplant |
+| P2-02 | [Katalogdaten synchronisieren](m2.md) | P2-01 | Abgenommen |
+| P2-03 | [Bilder und Kartensuche](m2.md) | P2-02, P1-04 | Review |
 | P2-04 | [Standorte verwalten](m2.md) | P1-04, P1-02 | Geplant |
 | P2-05 | [Bestand erfassen und anzeigen](m2.md) | P2-03, P2-04 | Geplant |
 | P2-06 | [Teilmengen atomar verschieben](m2.md) | P2-05 | Geplant |
@@ -86,6 +86,14 @@ Bisherige Einzelbefunde und Freigaben bleiben in der [Abnahmechronik](../histori
 
 P2-01 am 2. November 2026: Katalogschema, additive Migration und synthetische Fixtures umgesetzt; unabhängiger Review mit gezielter Testnacharbeit abgeschlossen. Am 2. November 2026 vom Benutzer abgenommen. [Prüfprotokoll und Grenzen](../historie/p2-01-2026-11-02.md).
 
-P2-02 am 2. November 2026: manueller, transaktionaler YGOPRODeck-Import mit quellengebundenen Identitäten, Quellbeobachtungen und Status umgesetzt. Varianten und Drucke werden aus den unvollständigen Quellangaben nicht bestätigt. Selbstprüfung abgeschlossen; unabhängige Prüfung ausstehend. [Prüfprotokoll und Grenzen](../historie/p2-02-2026-11-02.md).
+P2-02 am 2. November 2026: manueller, transaktionaler YGOPRODeck-Import mit quellengebundenen Identitäten, Quellbeobachtungen und Status umgesetzt. Varianten und Drucke werden aus den unvollständigen Quellangaben nicht bestätigt. Nach unabhängiger kritischer Prüfung und erfolgreicher [GitHub-CI für aa25cef](https://github.com/GrothRico/ygh/actions/runs/41439573573) vom Benutzer am 2. November 2026 abgenommen. [Prüfprotokoll und Grenzen](../historie/p2-02-2026-11-02.md).
 
 P1-16 am 2. November 2026: lokale Entwicklung mit zwei synthetischen Rollen, separater Datenbank und Produktionsbuild-Sperre umgesetzt und unabhängig kritisch geprüft. Am 2. November 2026 vom Benutzer nach erfolgreichem lokalem Zugriff abgenommen. [Prüfprotokoll und Grenzen](../historie/p1-16-2026-11-02.md).
+
+P2-03 am 2. November 2026: lokale DE/EN-Namens- und Codesuche mit Fehlertoleranz, sichtbaren Mehrdeutigkeiten und geschützter Bildauslieferung umgesetzt. Auf Benutzerwunsch ausschließlich lokale Bilder; separater gedrosselter, fortsetzbarer Bildimport. Unabhängige Code-, Test-, Produktionsartefakt- und Docker-Prüfung abgeschlossen. [Prüfprotokoll, Bedienung und Grenzen](../historie/p2-03-2026-11-02.md).
+
+P2-03-Erweiterung am 2. November 2026 ausdrücklich beauftragt: wöchentliche Aktualisierung der lokalen Kartenbasis und fehlender Bilder, sonntags um 06:00 UTC. Separater Ansible-/systemd-Zeitplan vorbereitet und unabhängig mit synthetischen Daten geprüft; nicht auf einem Server aktiviert. Der bisherige manuelle Bildimport bleibt verwendbar. [Nachtrag mit Nachweisen](../historie/p2-03-2026-11-02.md#nachtrag-regelmäßige-katalogaktualisierung).
+
+P2-03-Erweiterung am 2. November 2026 ausdrücklich freigegeben: die jeweils letzten vollständigen YGOPRODeck-JSON-Antworten (EN, DE, Sets, Version) in SQLite erhalten, gemeinsam mit Projektionen und Erfolg aktualisieren. Umsetzung, fokussierte Prüfung und unabhängiger Review sind abgeschlossen; der lastabhängige Backup-Test-Timeout wurde durch einen gezielten echten Schreibzugriff während der SQLite-Kopie behoben; der aktuelle Hosted-CI-Nachweis folgt; der frühere Umsetzungsvorschlag ist durch diese Freigabe überholt. [Nachtrag mit Prüfergebnissen und Grenzen](../historie/p2-03-2026-11-02.md#nachtrag-vollständige-json-antworten).
+
+Bewertung vor P2-04: P2-03 bleibt Review; menschliche Abnahme und aktueller Hosted-CI-Lauf stehen aus. Der zuvor instabile Backup-Test verwendet jetzt einen koordinierten echten Schreibzugriff während der Kopie; Luna und Hauptagent bestanden unabhängig die vollständige Testsuite parallel zur Typprüfung (64 bestanden, 13 Linux-Skips). [Unabhängiger Abschlussreview und offene Punkte](../historie/p2-03-2026-11-02.md#unabhängiger-abschlussreview-und-bewertung-der-offenen-punkte). P1-14 bleibt zurückgestellt, P0-02 wegen fehlendem Collectr-Export im Review; beide blockieren P2-04 nicht. Kein Folgepaket beauftragt.

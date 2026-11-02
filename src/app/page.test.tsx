@@ -14,11 +14,12 @@ describe("Startseite nach erfolgreicher Prüfung", () => {
 
   it("rendert den deutschen privaten Einstieg", async () => {
     requireReadAccess.mockResolvedValue({ id: "synthetic-user", role: "user", authMode: "tailscale" });
-    const markup = renderToStaticMarkup(await HomePage());
+    const markup = renderToStaticMarkup(await HomePage({ searchParams: Promise.resolve({}) }));
 
     expect(markup).toContain("Deine Yu-Gi-Oh!-Sammlung");
     expect(markup).toContain("private Sammlungsverwaltung");
-    expect(markup).toContain("Internetverbindung und die freigegebene Tailscale-Verbindung");
+    expect(markup).toContain("Finde Karten über deutschen oder englischen Namen und gedruckte Codes.");
+    expect(markup).toContain('name="q"');
     expect(markup).toContain('aria-label="Hauptnavigation"');
     expect(markup).toContain('href="#start" aria-current="page"');
     expect(markup).toContain('href="#inhalt"');
@@ -40,7 +41,7 @@ describe("Startseite nach erfolgreicher Prüfung", () => {
 
     expect(markup).toContain('role="status"');
     expect(markup).toContain("Lokale Entwicklung · Lokaler Test-Admin (Admin) · nur synthetische Daten");
-    expect(markup).toContain("Lokaler Entwicklungszugang auf diesem Rechner.");
+    expect(markup).toContain('name="q"');
     expect(markup).not.toContain("Tailscale-Verbindung");
   });
 });

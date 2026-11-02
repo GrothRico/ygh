@@ -33,15 +33,17 @@ python3 -m unittest discover -s scripts -p 'test_p112_*.py' -v
 python3 -m unittest discover -s infra/ansible/files -p 'test_verify_tailscale_serve.py' -v
 ```
 
-`typecheck` erzeugt Next-Routentypen und prüft TypeScript; `lint` verwendet Oxlint. Vitest nutzt temporäre Datenbanken, keine echte Sammlung. Auf macOS überspringen sechs Linux-spezifische Tests ihre Ausführung. Auf Linux benötigen vier Tests in `scripts/backup-runner.test.ts` Rootrechte für das unveränderte Hostskript. Für einen unprivilegierten Linux-Lauf diese gezielt mit `npm test -- --exclude scripts/backup-runner.test.ts` ausnehmen und die vier Hosttests separat in einer entbehrlichen isolierten Linux-Umgebung oder der vorhandenen CI prüfen. Ein Teillauf ist kein vollständiger Nachweis; nicht einfach `sudo npm test` auf dem Arbeitsplatz ausführen.
+`typecheck` erzeugt Next-Routentypen und prüft TypeScript; `lint` verwendet Oxlint. Vitest nutzt temporäre Datenbanken, keine echte Sammlung. Auf macOS überspringen 13 Linux-spezifische Tests ihre Ausführung: sechs bestehende Backup-/Deploymenttests und sieben Katalog-Hostrunnertests. Die Katalog-Hostrunnertests verwenden synthetische Docker-/Node-Ersatzbefehle und benötigen auf Linux keine Rootrechte. Auf Linux benötigen vier Tests in `scripts/backup-runner.test.ts` Rootrechte für das unveränderte Hostskript. Für einen unprivilegierten Linux-Lauf diese gezielt mit `npm test -- --exclude scripts/backup-runner.test.ts` ausnehmen und die vier Hosttests separat in einer entbehrlichen isolierten Linux-Umgebung oder der vorhandenen CI prüfen. Ein Teillauf ist kein vollständiger Nachweis; nicht einfach `sudo npm test` auf dem Arbeitsplatz ausführen.
 
 Der Workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) ist die ausführbare Referenz für CI-Befehle. Er läuft bei Push und Pull Request auf GitHub-hosted Ubuntu 26.04: Installation, Typprüfung, Lint, normale Node-Tests, vier Hosttests, beide Python-Gruppen und Build. Nur der Hosttestschritt nutzt sudo. Read-only Repositoryberechtigung, keine gespeicherten Checkout-Credentials, keine Produktionsgeheimnisse, keine Deployments. Root führt dabei auch npm/Vitest-Abhängigkeiten aus; dies ist keine Vorlage für dauerhafte Self-hosted Runner. Actions sind auf Commit-SHAs gepinnt.
 
-Letzter dokumentierter vollständiger Lauf: [28. Oktober 2026, Commit c4322bd](https://github.com/GrothRico/ygh/actions/runs/40679032774), 31 Node- und 26 Python-Tests sowie Typprüfung, Lint und Build erfolgreich. Die zusätzlichen lokalen P2-01-Prüfungen vom 2. November stehen im [Paketprotokoll](historie/p2-01-2026-11-02.md); für diesen neuen Arbeitsstand wurde kein Hosted-Lauf ausgelöst. CI deckt weder Ansible-Livebetrieb noch echte Geräte oder B2 ab.
+Letzter dokumentierter vollständiger Lauf: [2. November 2026, Commit aa25cef](https://github.com/GrothRico/ygh/actions/runs/41439573573), 52 Node-Tests (48 normale und vier Root-Hosttests), 26 Python-Tests sowie Typprüfung, Lint und Build erfolgreich. Die zusätzlichen lokalen P2-01-Prüfungen vom 2. November stehen im [Paketprotokoll](historie/p2-01-2026-11-02.md); für spätere Arbeitsstände wurde kein Hosted-Lauf ausgelöst. CI deckt weder Ansible-Livebetrieb noch echte Geräte oder B2 ab.
+
+Der Hauptbranch heißt seit dem 2. November 2026 auf ausdrücklichen Benutzerwunsch `main`, lokal mit `origin/main` verknüpft. Die GitHub-Umbenennung von `codex/p1-15-ci` erhielt den Commit `aa25cef` unverändert. Historische Branchangaben bleiben als damaliger Stand erhalten.
 
 ## Datenbank und Migrationen
 
-Implementiert sind `users`, `cards`, `sets`, `variants` und `printings` samt Drizzle-Migrationsmetadaten in `src/server/db/`. Die Migration `0001_catalog.sql` ergänzt die vier Katalogtabellen; `0000` bleibt unverändert. Das [Datenmodell](datenmodell.md) beschreibt zusätzlich geplante Tabellen, die noch nicht existieren. Die Verbindung aktiviert Fremdschlüssel. Migrationen werden versioniert; kein `drizzle-kit push`.
+Implementiert sind `users`, `cards`, `sets`, `variants`, `printings`, `source_printing_observations`, `catalog_sync_status` und `catalog_source_payloads` samt Drizzle-Migrationsmetadaten in `src/server/db/`. Die Migrationen `0001_catalog.sql`, `0002_catalog_sync.sql` und `0003_catalog_source_payloads.sql` ergänzen den Katalog. Das [Datenmodell](datenmodell.md) beschreibt zusätzlich geplante Tabellen, die noch nicht existieren. Die Verbindung aktiviert Fremdschlüssel. Migrationen werden versioniert; kein `drizzle-kit push`.
 
 ```sh
 npm run db:generate
@@ -50,9 +52,9 @@ DATABASE_PATH=/absoluter/pfad/zur/entbehrlichen/test.sqlite npm run db:migrate
 
 Vor Ausführung einen existierenden Testordner und bewusst gewählten Datenbankpfad einsetzen. Generierte SQL-Dateien prüfen; Migration echter Daten ist kein Entwicklungstest. Das Schema oder die Verbindung nicht beim normalen Modulimport automatisch migrieren.
 
-## Manueller Katalogimport
+## Katalogimport
 
-P2-02 ergänzt einen manuellen YGOPRODeck-v7-Import. Er lädt die vollständigen englischen und deutschen Kartenantworten, die Setliste und den Datenbankversionsstand. Die Netzantworten werden vollständig geprüft, bevor eine einzige Schreibtransaktion startet. Deutsche Einträge werden nur über dieselbe Karten-ID zugeordnet; fehlende deutsche Datensätze überschreiben keine vorhandene Übersetzung. Unbestätigte Setcode-/Seltenheitsangaben bleiben Quellbeobachtungen und erzeugen keine bestätigten Varianten oder Drucke.
+P2-02 ergänzt einen manuellen YGOPRODeck-v7-Import. Er lädt die vollständigen englischen und deutschen Kartenantworten (mit `misc=yes`), die Setliste und den Datenbankversionsstand. Nach erfolgreicher Validierung speichert er diese vier vollständigen geparsten JSON-Dokumente zusätzlich zu den normalisierten Feldern in `catalog_source_payloads`. Das bewahrt unbekannte Felder, weitere Antwortfelder und Karten ohne englische Zuordnung; es ist jeweils nur der letzte erfolgreiche Stand, kein Rohdatenverlauf oder Einzelkartenindex. Die Tabellenzeilen, JSON-Hüllen und unbekannten verschachtelten Felder werden erhalten, nicht die ursprüngliche Bytefolge der HTTP-Antwort. `misc=yes` liefert zusätzliche Kartenfelder, aber keine eigens angeforderten Antworten für alle formatabhängigen Sonderfälle. Alle Antworten werden vor der Schreibtransaktion als JSON eingelesen; die für den Katalog benötigten Felder werden validiert. Unbekannte Zusatzfelder bleiben ohne fachliche Interpretation erhalten. Deutsche Einträge werden nur über dieselbe Karten-ID zugeordnet; fehlende deutsche Datensätze überschreiben keine vorhandene Übersetzung. Unbestätigte Setcode-/Seltenheitsangaben bleiben Quellbeobachtungen und erzeugen keine bestätigten Varianten oder Drucke.
 
 Nur eine bewusst gewählte lokale Katalogdatenbank verwenden. Die CLI migriert nie selbst und verlangt eine bereits migrierte Datenbank. Für eine neue entbehrliche Datei muss das Elternverzeichnis existieren; einen bewusst gewählten absoluten Datenbankpfad einsetzen:
 
@@ -62,7 +64,9 @@ DATABASE_PATH=/absoluter/pfad/zur/lokalen-katalog.sqlite npm run catalog:sync --
 DATABASE_PATH=/absoluter/pfad/zur/lokalen-katalog.sqlite npm run catalog:sync -- status
 ```
 
-Der Synchronisationsaufruf benötigt Netzwerkzugriff auf die fest eingetragenen HTTPS-Endpunkte. Er importiert keine Bilder, Preise oder Kartenspielwerte und löscht keine vorhandenen Karten, Sets, Varianten oder Drucke. Der Status zeigt letzten Versuch und Erfolg, Quellversion/-datum, Fehlercode und erkannte Konflikte. Ein Quellfehler lässt den Katalog unverändert; letzter erfolgreicher Zeitstempel, Quellversion und Konflikthinweise bleiben erhalten. Der offizielle Guide dokumentiert Datenbankversion und Datum, aber nicht die konkrete JSON-Hülle der Versionsantwort. Der Parser akzeptiert defensiv ein Objekt oder ein Array mit genau einem Objekt; die aktuelle Liveform wurde nicht belegt. Druckcode-/Raritätsbeobachtungen belegen keine Sprache, Edition oder Artworkzuordnung. Es gibt keinen Cronlauf oder Anwendungsbildschirm für den Import.
+Der Synchronisationsaufruf benötigt Netzwerkzugriff auf die fest eingetragenen HTTPS-Endpunkte. Er lädt keine Bilder herunter. In den vollständigen JSON-Antworten enthaltene Preisangaben werden mitgespeichert; es gibt keine gesonderte Preisabfrage, normalisierte Preiszuordnung oder Anzeige. Kartenspielwerte können ebenfalls in den Payloads stehen, werden von der Anwendung aber nicht als Fachspalten verwendet. Der Import löscht keine vorhandenen Karten, Sets, Varianten oder Drucke. Payloads, normalisierte Projektionen und Erfolgsstatus werden gemeinsam transaktional gespeichert. `fetched_at` entspricht dem bisherigen `attemptedAt`, also dem Beginn des Synchronisationsversuchs. Ein Netzwerk-, Parse- oder Schreibfehler lässt den letzten erfolgreichen Payload- und Katalogstand unverändert; der Fehlversuch wird separat im Syncstatus geführt. Die normale SQLite-Sicherung umfasst die Payload-Dokumente. Der offizielle Guide dokumentiert Datenbankversion und Datum, aber nicht die konkrete JSON-Hülle der Versionsantwort. Der Parser akzeptiert defensiv ein Objekt oder ein Array mit genau einem Objekt; die aktuelle Liveform wurde nicht belegt. Druckcode-/Raritätsbeobachtungen belegen keine Sprache, Edition oder Artworkzuordnung.
+
+Ein separater Hostrunner ist für die wöchentliche Aktualisierung sonntags um 06:00 UTC mit systemd vorbereitet; er führt den Katalogimport vor dem Bildimport im Worker aus und teilt den Wartungs-Lock mit Backup und Deployment. Das Ansible-Playbook ist nicht an andere Playbooks angehängt und nicht auf einem Host ausgeführt. Der lokale Entwicklungsstack hat keinen automatischen Kataloglauf; seine CLI-Aufrufe bleiben manuell und verwenden nur den angegebenen Datenbankpfad. Voraussetzungen, Lock-/Worker-Verhalten und Grenzen stehen in [Betrieb: Katalogspeicher und automatische Aktualisierung](betrieb.md#katalogspeicher-und-automatische-aktualisierung).
 
 Im lokalen Stack kann die CLI direkt gegen dessen Datenbankvolume laufen, ohne den Datenbankpfad im Container zu verändern:
 
@@ -72,6 +76,30 @@ docker compose -p ygh-local -f compose.local.yaml exec local node scripts/catalo
 ```
 
 Nach diesem Codeupdate muss das Entwicklungsimage neu gebaut und die lokale Testdatenbank migriert werden. Der ausdrücklich gestartete lokale E09-Stack erledigt seine Migration beim Start; echte Daten dürfen nur im Rahmen eines gesonderten Betriebsauftrags migriert werden. `sync` startet selbst keine Migration; der Katalogimport wird weder beim Containerstart noch beim Anwendungsstart automatisch ausgeführt. Der Produktionsrunner enthält dieselbe manuelle CLI, führt sie aber ebenfalls nicht beim Start aus.
+
+## Kartensuche und Bilder
+
+Die geschützte Startseite sucht in deutschen und englischen Kartennamen sowie bestätigten Druckcodes und unbestätigten Quellbeobachtungen. Exakte Codes stehen zuerst; kleine Schreibfehler werden bei Namen und ausreichend langen Codes toleriert. Die Trefferzahl ist auf 30 begrenzt. Drucke mit expliziter Variante bleiben als bestätigt gekennzeichnet; Quellbeobachtungen werden sichtbar als nicht bestätigt dargestellt. Verschiedene bestätigte Artworks bleiben getrennt. Eine englische Quellenabbildung ist nur eine Kartenreferenz und bestätigt keine konkrete Druckvariante.
+
+Die geschützte Route `/api/cards/[cardId]/image` prüft zuerst die Identität, liest danach den Katalog und liefert ausschließlich einen vorhandenen gültigen JPG-Cache. Sie ruft den Bildanbieter beim Suchen oder Anzeigen nie auf; Cachemiss oder ungültiges Bild ergibt HTTP 404 und die UI zeigt einen Platzhalter. Die Cachedatei liegt in `card-images/` neben der Datenbank, im Container unter `/data/card-images`. Die Backupskripte sichern Datenbank und Importdateien, nicht diesen regenerierbaren Bildcache.
+
+Der Bildcache wird durch die Import-CLI befüllt: lokal manuell, auf dem späteren Server zusätzlich über den separat eingerichteten Hosttimer. Der manuelle Aufruf lautet:
+
+```sh
+DATABASE_PATH=/absoluter/pfad/zur/lokalen-katalog.sqlite npm run catalog:images -- sync
+```
+
+Die CLI öffnet die bereits migrierte SQLite-Datenbank nur lesend und betrachtet ausschließlich Karten mit Quelle `ygoprodeck` und numerischer Quell-ID. Sie lädt das kleine englische Referenzbild `cards_small/{ID}.jpg`; es behauptet keine Zuordnung zu einzelnen Drucken und lädt keine abweichenden Artworks. Gültige Cachedateien werden übersprungen, sodass ein späterer manueller Lauf nach einem Abbruch fortsetzen kann. Eine 404-Antwort wird als nicht verfügbares Bild gezählt und übersprungen. Netzwerk-/Serverfehler, ungültige oder zu große Antworten, Cachefehler sowie HTTP 403/429 beenden den Lauf; bei 403/429 gibt es keinen sofortigen Wiederholungsversuch. Zuvor erfolgreich gespeicherte Dateien bleiben erhalten.
+
+Pro Cacheverzeichnis läuft höchstens ein Import gleichzeitig; der Sperrmarker heißt `/data/card-images/.catalog-images.lock` im Container. Nach einem harten Prozessabbruch den Marker nur entfernen, nachdem feststeht, dass kein Bildimport mehr läuft. Verwaiste Dateien `.*.tmp` dürfen ebenfalls erst nach dieser Prüfung entfernt werden. Jeder Abruf hat acht Sekunden Timeout, Redirects werden abgewiesen, Antworttyp und JPEG-Signatur geprüft, Größe ist auf zwei MiB begrenzt. Der Import startet pro Quelle höchstens eine Anfrage pro Sekunde. Das ist eine vorsichtige lokale Begrenzung, keine vom Anbieter bestätigte Bildrate oder Garantie gegen Blockierung: Der [YGOPRODeck-API-Guide](https://ygoprodeck.com/api-guide/) nennt allgemein 20 API-Anfragen pro Sekunde und eine mögliche einstündige Sperre, gibt für Bildabrufe bei hoher Last aber keine numerische Grenze an. Bei 15.000 fehlenden Kartenbildern dauert ein erster Lauf mit der gewählten Pause rechnerisch rund 4,2 Stunden; diese Dauer wurde nicht gemessen. Im lokalen Entwicklungsstack gibt es keinen automatischen Lauf; Seitenaufrufe lösen auch auf dem Server niemals Provideranfragen aus.
+
+Im lokalen Stack kann der gleiche bewusste CLI-Aufruf gegen dessen eigenes Datenvolume laufen:
+
+```sh
+docker compose -p ygh-local -f compose.local.yaml exec local npm run catalog:images -- sync
+```
+
+Der Entwicklungs- und Produktionscontainer enthalten den CLI-Code, führen ihn aber weder beim Start noch eigenständig in einem Hintergrundjob aus. Der separate Hosttimer muss auf einem freigegebenen Zielhost bewusst mit `configure-catalog-update.yml` eingerichtet werden. Die Backupskripte sichern den regenerierbaren JPG-Cache nicht.
 
 ## Docker-Entwicklung
 

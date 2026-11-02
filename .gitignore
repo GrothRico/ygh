@@ -9,5 +9,6 @@ coverage/
 npm-debug.log*
 local.sqlite
 local.sqlite-*
+card-images/
 __pycache__/
 *.pyc

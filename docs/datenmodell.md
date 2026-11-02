@@ -1,6 +1,6 @@
 # Datenmodell
 
-Dieses Dokument trennt eingeführtes Schema von weiterem Entwurf. `users`, `cards`, `sets`, `variants` und `printings` sind implementiert; die übrigen Tabellen bleiben Vorschläge für spätere ausdrücklich beauftragte Pakete. Paketstatus stehen im [Aufgabenindex](aufgaben/README.md). Fremdschlüssel, positive Mengen und atomare Bestandsänderungen sind verbindliche fachliche Regeln.
+Dieses Dokument trennt eingeführtes Schema von weiterem Entwurf. `users`, `cards`, `sets`, `variants`, `printings`, `source_printing_observations`, `catalog_sync_status` und `catalog_source_payloads` sind implementiert; die übrigen Tabellen bleiben Vorschläge für spätere ausdrücklich beauftragte Pakete. Paketstatus stehen im [Aufgabenindex](aufgaben/README.md). Fremdschlüssel, positive Mengen und atomare Bestandsänderungen sind verbindliche fachliche Regeln.
 
 ## Benutzer und Standorte
 
@@ -22,8 +22,11 @@ Ein Personenstandort ist ein Wurzelknoten mit `person_id`. Alle darunterliegende
 | `printings` | `id`, `variant_id`, `language`, `printed_code`, `source`, `source_id` | Konkreter Katalogdruck mit expliziter Sprach- und Quellenzuordnung. |
 | `source_printing_observations` | `id`, `card_id`, `source`, `card_source_id`, `set_name`, `printed_code`, `rarity`, `rarity_code?` | Unbestätigte Druckangaben aus einer Quelle; keine bestätigte Set-, Sprach-, Editions- oder Artworkzuordnung. |
 | `catalog_sync_status` | `source`, Versuch/Erfolg, Quellversion/-datum, Status, Fehlercode, Konfliktanzahl/-kurzliste | Ergebnis des letzten manuellen Quellimports. Fehlversuche erhalten den letzten erfolgreichen Stand. |
+| `catalog_source_payloads` | `source`, `resource`, `payload_json`, `fetched_at`, `database_version` | Je Quelle die letzte erfolgreiche vollständige JSON-Antwort für `cards_en`, `cards_de`, `sets` und `version`; kein Verlauf und kein Einzelkartenindex. |
 
-`variants` enthalten ausschließlich belegte Kombinationen. Der aktuelle Schemawert für Edition ist `first`, `unlimited` oder `not_applicable`; unbekannte Editionen bilden keine Variante. Seltenheit und Artwork sind eigene, nicht nullable Merkmale und gehen in die eindeutige Variantenidentität ein. Abgeleitete Werte wie Angriff, Verteidigung, Kartentypen und Bilder sind noch nicht im Schema und brauchen spätere, quellengeprüfte Ergänzung.
+Der manuelle YGOPRODeck-Import speichert diese vier vollständigen geparsten Antworten zusätzlich zu den normalisierten Katalogfeldern. Unbekannte Felder und Einträge ohne englische Zuordnung bleiben darin erhalten. `misc=yes` wird für die beiden Kartenabfragen angefordert; weitere formatabhängige Sonderantworten werden nicht zusätzlich abgerufen. Die aktuelle Suche und Oberfläche verwenden weiterhin nur die normalisierten Spalten. `fetched_at` ist der vorhandene `attemptedAt`-Zeitpunkt zu Beginn des Imports. Payloads, normalisierte Projektionen und Erfolgsstatus werden gemeinsam in einer SQLite-Transaktion ersetzt; ein fehlgeschlagener Import bewahrt den vorherigen Payload- und Katalogstand. Die normale Datenbanksicherung umfasst die Payload-Tabelle.
+
+`variants` enthalten ausschließlich belegte Kombinationen. Der aktuelle Schemawert für Edition ist `first`, `unlimited` oder `not_applicable`; unbekannte Editionen bilden keine Variante. Seltenheit und Artwork sind eigene, nicht nullable Merkmale und gehen in die eindeutige Variantenidentität ein. Angriff, Verteidigung und Kartentypen sind noch keine normalisierten Fachspalten und benötigen dafür spätere quellengeprüfte Ergänzung; sofern die Quelle sie liefert, können diese Werte im vollständigen JSON-Payload stehen. Die lokalen JPG-Bilder liegen im separaten Cache, nicht im Katalogschema.
 
 Deutsch und Englisch dürfen auf dasselbe `variant_id` zeigen. Sprache und Druckcode werden ausdrücklich je Druck gespeichert; Sprache wird weder aus Namen abgeleitet noch aus Codes normalisiert. Separate Kartenidentitäten bleiben erhalten, wenn sich die tatsächlichen Karten unterscheiden.
 

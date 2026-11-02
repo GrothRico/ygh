@@ -40,6 +40,7 @@ export type CatalogSnapshot = {
   sets: SourceSet[];
   databaseVersion: string;
   databaseDate: string | null;
+  payloads: Record<"cards_en" | "cards_de" | "sets" | "version", string>;
 };
 
 export type SyncResult = {
@@ -80,6 +81,16 @@ function sourceId(value: unknown): string {
 
 function optionalString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+function encodePayload(value: unknown): string {
+  try {
+    const encoded = JSON.stringify(value);
+    if (typeof encoded !== "string") throw new Error("not JSON");
+    return encoded;
+  } catch {
+    throw new CatalogSyncError("invalid_json_payload");
+  }
 }
 
 function getRows(value: unknown, field: string): unknown[] {
@@ -185,6 +196,12 @@ export function parseCatalogSnapshot(
       const version = parseVersion(versionResponse);
       return { databaseVersion: version.version, databaseDate: version.date };
     })(),
+    payloads: {
+      cards_en: encodePayload(enResponse),
+      cards_de: encodePayload(deResponse),
+      sets: encodePayload(setsResponse),
+      version: encodePayload(versionResponse),
+    },
   };
 }
 
@@ -209,9 +226,14 @@ async function fetchJson(url: string): Promise<unknown> {
 type JsonFetcher = (url: string) => Promise<unknown>;
 
 export async function fetchCatalogSnapshot(fetcher: JsonFetcher = fetchJson): Promise<CatalogSnapshot> {
+  const englishUrl = new URL(CARD_ENDPOINT);
+  englishUrl.searchParams.set("misc", "yes");
+  const germanUrl = new URL(CARD_ENDPOINT);
+  germanUrl.searchParams.set("language", "de");
+  germanUrl.searchParams.set("misc", "yes");
   const [enResponse, deResponse, setsResponse, versionResponse] = await Promise.all([
-    fetcher(CARD_ENDPOINT),
-    fetcher(`${CARD_ENDPOINT}?language=de`),
+    fetcher(englishUrl.toString()),
+    fetcher(germanUrl.toString()),
     fetcher(SET_ENDPOINT),
     fetcher(VERSION_ENDPOINT),
   ]);
@@ -315,6 +337,13 @@ export function applyCatalogSnapshot(
         );
         observationCount += 1;
       }
+    }
+
+    const upsertPayload = database.prepare(
+      "INSERT INTO catalog_source_payloads (source, resource, payload_json, fetched_at, database_version) VALUES (?, ?, ?, ?, ?) ON CONFLICT(source, resource) DO UPDATE SET payload_json = excluded.payload_json, fetched_at = excluded.fetched_at, database_version = excluded.database_version",
+    );
+    for (const resource of ["cards_en", "cards_de", "sets", "version"] as const) {
+      upsertPayload.run(CATALOG_SOURCE, resource, snapshot.payloads[resource], attemptedAt, snapshot.databaseVersion);
     }
 
     database.prepare(

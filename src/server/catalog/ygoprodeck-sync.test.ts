@@ -16,6 +16,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { syntheticCatalog } from "../db/__tests__/fixtures/catalog";
 import {
   applyCatalogSnapshot,
+  fetchCatalogSnapshot,
   parseCatalogSnapshot,
   readCatalogSyncStatus,
   syncCatalog,
@@ -32,7 +33,7 @@ function temporaryDatabasePath(): string {
   return join(directory, "catalog.sqlite");
 }
 
-function makeLegacyMigrationFolder(): string {
+function makeLegacyMigrationFolder(maxIndex: number): string {
   const directory = mkdtempSync(join(tmpdir(), "ygh-p202-migrations-"));
   temporaryDirectories.push(directory);
   const migrationsFolder = join(directory, "migrations");
@@ -53,7 +54,7 @@ function makeLegacyMigrationFolder(): string {
       breakpoints: boolean;
     }>;
   };
-  const legacyEntries = journal.entries.filter((entry) => entry.idx <= 1);
+  const legacyEntries = journal.entries.filter((entry) => entry.idx <= maxIndex);
   writeFileSync(
     join(metadataFolder, "_journal.json"),
     JSON.stringify({ ...journal, entries: legacyEntries }, null, 2),
@@ -98,13 +99,15 @@ function sampleSnapshot(): CatalogSnapshot {
             { set_name: "Sample Set", set_code: "SMP-EN001", set_rarity: "Ultra Rare", set_rarity_code: "(UR)" },
             { set_name: "Sample Set", set_code: "SMP-EN001", set_rarity: "Secret Rare" },
           ],
+          misc_info: [{ formats: ["tcg", "ocg"], nested: { nullable: null, values: [1, "x"] } }],
+          unknown_future_field: { retained: true },
         },
         { id: 1002, name: "Second Example", desc: "Second effect", card_sets: [] },
       ],
     },
     {
       data: [
-        { id: 1001, name: "Beispieldrache", desc: "Deutscher Quelltext" },
+        { id: 1001, name: "Beispieldrache", desc: "Deutscher Quelltext", future_de_field: [null, { x: 2 }] },
         { id: 2001, name: "Nicht zugeordnet", desc: "Unmatched DE only" },
       ],
     },
@@ -143,6 +146,73 @@ afterEach(() => {
 });
 
 describe("YGOPRODeck catalog sync", () => {
+  it("requests misc fields in both language-specific card responses", async () => {
+    const urls: URL[] = [];
+    await fetchCatalogSnapshot(async (address) => {
+      urls.push(new URL(address));
+      if (address.includes("cardinfo.php")) return { data: [{ id: 1, name: "Card" }] };
+      if (address.includes("cardsets.php")) return [{ set_name: "Set", set_code: "SET" }];
+      return { database_version: "v1" };
+    });
+    const requests = urls.filter((url) => url.pathname.endsWith("cardinfo.php"));
+    expect(requests).toHaveLength(2);
+    expect(requests.map((url) => url.searchParams.get("misc"))).toEqual(["yes", "yes"]);
+    expect(requests.map((url) => url.searchParams.get("language")).sort()).toEqual(["de", null]);
+  });
+
+  it("stores and replaces the four complete parsed API documents", () => {
+    const databasePath = temporaryDatabasePath();
+    migrate(databasePath);
+    const database = new Database(databasePath);
+    try {
+      database.pragma("foreign_keys = ON");
+      const first = sampleSnapshot();
+      applyCatalogSnapshot(database, first, "2026-11-02T10:00:00.000Z");
+      const readPayloads = () => database.prepare(
+        "SELECT resource, payload_json, fetched_at, database_version FROM catalog_source_payloads ORDER BY resource",
+      ).all() as Array<{ resource: string; payload_json: string; fetched_at: string; database_version: string }>;
+      const firstRows = readPayloads();
+      expect(firstRows.map(({ resource }) => resource)).toEqual(["cards_de", "cards_en", "sets", "version"]);
+      const english = JSON.parse(firstRows.find(({ resource }) => resource === "cards_en")!.payload_json) as { data: Array<Record<string, unknown>> };
+      expect(english.data[0]).toMatchObject({
+        misc_info: [{ formats: ["tcg", "ocg"], nested: { nullable: null, values: [1, "x"] } }],
+        unknown_future_field: { retained: true },
+      });
+      const german = JSON.parse(firstRows.find(({ resource }) => resource === "cards_de")!.payload_json) as { data: Array<Record<string, unknown>> };
+      expect(german.data[1]?.name).toBe("Nicht zugeordnet");
+      expect(firstRows.every((row) => row.fetched_at === "2026-11-02T10:00:00.000Z" && row.database_version === first.databaseVersion)).toBe(true);
+
+      const updated = parseCatalogSnapshot(
+        { data: [{ id: 1001, name: "Example Dragon", desc: "English source text", card_sets: [] }] },
+        { data: [{ id: 1001, name: "Beispieldrache", desc: "Deutscher Quelltext" }] },
+        [{ set_name: "Sample Set", set_code: "SMP" }],
+        { database_version: "v2" },
+      );
+      applyCatalogSnapshot(database, updated, "2026-11-02T10:01:00.000Z");
+      const updatedRows = readPayloads();
+      expect(updatedRows).toHaveLength(4);
+      expect(updatedRows.find(({ resource }) => resource === "cards_en")?.payload_json).toBe(JSON.stringify({
+        data: [{ id: 1001, name: "Example Dragon", desc: "English source text", card_sets: [] }],
+      }));
+      expect(updatedRows.find(({ resource }) => resource === "cards_en")?.payload_json).not.toContain("unknown_future_field");
+      expect(updatedRows.find(({ resource }) => resource === "version")?.database_version).toBe("v2");
+
+      const noGerman = parseCatalogSnapshot(
+        { data: [{ id: 1001, name: "Example Dragon", desc: "English source text" }] },
+        { data: [{ id: 2001, name: "Unmatched only", desc: "No matching EN card" }] },
+        [{ set_name: "Sample Set", set_code: "SMP" }],
+        { database_version: "v3" },
+      );
+      applyCatalogSnapshot(database, noGerman, "2026-11-02T10:02:00.000Z");
+      expect(database.prepare("SELECT name_de FROM cards WHERE source_id = '1001'").get()).toEqual({ name_de: "Beispieldrache" });
+      const latestGermanJson = readPayloads().find(({ resource }) => resource === "cards_de")?.payload_json ?? "";
+      expect(latestGermanJson).toContain("Unmatched only");
+      expect(latestGermanJson).not.toContain("Beispieldrache");
+    } finally {
+      database.close();
+    }
+  });
+
   it("keeps same-code sets distinct and marks a German-only ID as a conflict", () => {
     const snapshot = sampleSnapshot();
     const databasePath = temporaryDatabasePath();
@@ -341,9 +411,30 @@ describe("YGOPRODeck catalog sync", () => {
         variants: database.prepare("SELECT * FROM variants ORDER BY id").all(),
         printings: database.prepare("SELECT * FROM printings ORDER BY id").all(),
         observations: database.prepare("SELECT * FROM source_printing_observations ORDER BY id").all(),
+        payloads: database.prepare("SELECT * FROM catalog_source_payloads ORDER BY resource").all(),
         status: readCatalogSyncStatus(database),
       };
-      database.exec("CREATE TRIGGER reject_test_observation BEFORE INSERT ON source_printing_observations WHEN NEW.printed_code = 'FAIL-LATE' BEGIN SELECT RAISE(ABORT, 'synthetic late failure'); END");
+
+      const malformed: CatalogSnapshot = {
+        ...initial,
+        payloads: {
+          ...initial.payloads,
+          cards_en: JSON.stringify({ data: [{ id: 1001, name: "", optional_future_field: { changed: true } }] }),
+        },
+      };
+      const malformedFetcher = async (address: string): Promise<unknown> => {
+        const url = new URL(address);
+        if (url.pathname.endsWith("cardinfo.php") && url.searchParams.get("language") !== "de") {
+          return JSON.parse(malformed.payloads.cards_en) as unknown;
+        }
+        return fetcherFor(initial)(address);
+      };
+      await expect(syncCatalog(database, malformedFetcher, "2026-11-02T10:04:00.000Z"))
+        .rejects.toMatchObject({ errorCode: "invalid_en_name" });
+      expect(database.prepare("SELECT * FROM catalog_source_payloads ORDER BY resource").all()).toEqual(before.payloads);
+      expect(database.prepare("SELECT id, source, source_id, name_en, name_de FROM cards ORDER BY id").all()).toEqual(before.cards);
+
+      database.exec("CREATE TRIGGER reject_test_payload BEFORE INSERT ON catalog_source_payloads WHEN NEW.resource = 'version' BEGIN SELECT RAISE(ABORT, 'synthetic late failure'); END");
 
       const changed: CatalogSnapshot = {
         ...initial,
@@ -373,6 +464,7 @@ describe("YGOPRODeck catalog sync", () => {
       expect(database.prepare("SELECT * FROM variants ORDER BY id").all()).toEqual(before.variants);
       expect(database.prepare("SELECT * FROM printings ORDER BY id").all()).toEqual(before.printings);
       expect(database.prepare("SELECT * FROM source_printing_observations ORDER BY id").all()).toEqual(before.observations);
+      expect(database.prepare("SELECT * FROM catalog_source_payloads ORDER BY resource").all()).toEqual(before.payloads);
       expect(readCatalogSyncStatus(database)).toMatchObject({
         status: "failed",
         lastSuccessAt: "2026-11-02T10:00:00.000Z",
@@ -384,9 +476,9 @@ describe("YGOPRODeck catalog sync", () => {
     }
   });
 
-  it("upgrades an existing P2-01 catalog without losing confirmed rows and enforces source identity pairs", () => {
+  it.each([1, 2])("upgrades a catalog through migration 000%d without losing confirmed rows", (maxIndex) => {
     const databasePath = temporaryDatabasePath();
-    migrate(databasePath, makeLegacyMigrationFolder());
+    migrate(databasePath, makeLegacyMigrationFolder(maxIndex));
     const legacy = new Database(databasePath);
     legacy.pragma("foreign_keys = ON");
     insertLegacyCatalog(legacy);
@@ -395,6 +487,7 @@ describe("YGOPRODeck catalog sync", () => {
     migrate(databasePath);
     const upgraded = new Database(databasePath);
     try {
+      expect(upgraded.prepare("SELECT count(*) AS count FROM catalog_source_payloads").get()).toEqual({ count: 0 });
       expect(upgraded.prepare("SELECT id, source, source_id FROM cards WHERE id = ?").get(syntheticCatalog.card.id)).toEqual({
         id: syntheticCatalog.card.id,
         source: null,
@@ -412,7 +505,8 @@ describe("YGOPRODeck catalog sync", () => {
 
 function fetcherFor(snapshot: CatalogSnapshot): (url: string) => Promise<unknown> {
   return async (url) => {
-    if (url.endsWith("cardinfo.php?language=de")) {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.pathname.endsWith("cardinfo.php") && parsedUrl.searchParams.get("language") === "de") {
       return {
         data: snapshot.germanCards.map((card) => ({
           id: card.sourceId,
@@ -421,7 +515,7 @@ function fetcherFor(snapshot: CatalogSnapshot): (url: string) => Promise<unknown
         })),
       };
     }
-    if (url.endsWith("cardinfo.php")) {
+    if (parsedUrl.pathname.endsWith("cardinfo.php")) {
       return {
         data: snapshot.englishCards.map((card) => ({
           id: card.sourceId,
@@ -436,7 +530,7 @@ function fetcherFor(snapshot: CatalogSnapshot): (url: string) => Promise<unknown
         })),
       };
     }
-    if (url.endsWith("cardsets.php")) {
+    if (parsedUrl.pathname.endsWith("cardsets.php")) {
       return snapshot.sets.map((set) => ({ set_code: set.code, set_name: set.name }));
     }
     return [{ database_version: snapshot.databaseVersion, last_update: snapshot.databaseDate }];

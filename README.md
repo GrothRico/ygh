@@ -2,7 +2,7 @@
 
 Private deutschsprachige Webanwendung für zwei Brüder: rund 15.000 Karten, ihre physischen Standorte, Decks und Cubes. Geplant für Desktop, iPhone und Android über Tailscale.
 
-Vorhanden sind das technische Grundgerüst, Zugriffsschutz, Docker-/Ansible-Werkzeuge, Backup-/Restore-Helfer, CI, eine responsive Anwendungshülle und das Katalogschema. **Kartenverwaltung und Produktivbetrieb sind noch nicht fertig.** Maßgeblich für weitere Aufträge sind [Paketstatus und Freigaben](docs/aufgaben/README.md).
+Vorhanden sind das technische Grundgerüst, Zugriffsschutz, Docker-/Ansible-Werkzeuge, Backup-/Restore-Helfer, CI, eine responsive Anwendungshülle das Katalogschema, ein manueller Katalog-/Bildimport und eine lokale Kartensuche. **Kartenverwaltung und Produktivbetrieb sind noch nicht fertig.** Maßgeblich für weitere Aufträge sind [Paketstatus und Freigaben](docs/aufgaben/README.md).
 
 - [Dokumentationsübersicht](docs/README.md): Einstieg und Zuständigkeit jeder Datei.
 - [Entwicklung](docs/entwicklung.md): lokale Einrichtung, Prüfungen und Fehlersuche.

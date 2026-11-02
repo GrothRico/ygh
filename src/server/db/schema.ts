@@ -104,6 +104,20 @@ export const catalogSyncStatus = sqliteTable("catalog_sync_status", {
   check("catalog_sync_conflict_count_nonnegative", sql`${table.conflictCount} >= 0`),
 ]);
 
+export const catalogSourcePayloads = sqliteTable("catalog_source_payloads", {
+  source: text("source").notNull(),
+  resource: text("resource").notNull(),
+  payloadJson: text("payload_json").notNull(),
+  fetchedAt: text("fetched_at").notNull(),
+  databaseVersion: text("database_version").notNull(),
+}, (table) => [
+  check("catalog_payload_source_nonempty", sql`length(trim(${table.source})) > 0`),
+  check("catalog_payload_resource_valid", sql`${table.resource} IN ('cards_en', 'cards_de', 'sets', 'version')`),
+  check("catalog_payload_json_valid", sql`json_valid(${table.payloadJson})`),
+  check("catalog_payload_version_nonempty", sql`length(trim(${table.databaseVersion})) > 0`),
+  uniqueIndex("catalog_payload_source_resource_unique").on(table.source, table.resource),
+]);
+
 export const variants = sqliteTable("variants", {
   id: text("id").primaryKey(),
   cardId: text("card_id")
