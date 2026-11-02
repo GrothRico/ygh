@@ -5,6 +5,7 @@ import { currentRequestId, logEvent, withRequestContext } from "./logging";
 import {
   AuthenticationError,
   getCurrentUser,
+  readAuthConfiguration,
   type AuthenticatedUser,
 } from "./auth";
 
@@ -65,6 +66,7 @@ function recordFailure(error: unknown, started: number) {
     status,
     durationMs: performance.now() - started,
     reason,
+    mode: process.env.YGH_LOCAL_DEV_USER === undefined ? "tailscale" : "local",
   });
 }
 
@@ -72,7 +74,7 @@ async function authorizeRead(requiredRole?: RequiredRole): Promise<Authenticated
   try {
     const started = performance.now();
     const user = await getCurrentUser();
-    logEvent({ event: "auth.allowed", status: 200, durationMs: performance.now() - started, reason: "success" });
+    logEvent({ event: "auth.allowed", status: 200, durationMs: performance.now() - started, reason: "success", mode: user.authMode });
     return requireRole(user, requiredRole);
   } catch (error) {
     if (error instanceof AuthenticationError) {
@@ -96,6 +98,16 @@ export async function requireReadAccess(requiredRole?: RequiredRole): Promise<Au
 }
 
 function configuredOrigin(): URL {
+  if (process.env.YGH_LOCAL_DEV_USER !== undefined) {
+    try {
+      const configuration = readAuthConfiguration(process.env);
+      if (configuration.localDevUser === null) throw new Error("Local mode is unavailable.");
+      return new URL("http://127.0.0.1:3001");
+    } catch {
+      throw new AccessError(503, "Zugriff ist derzeit nicht verfügbar.", "configuration");
+    }
+  }
+
   const value = process.env.APP_ORIGIN;
   if (!value) {
     throw new AccessError(503, "Zugriff ist derzeit nicht verfügbar.", "configuration");

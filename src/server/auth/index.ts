@@ -9,13 +9,20 @@ export type AuthenticatedUser = {
   id: string;
   displayName: string;
   role: "admin" | "user";
+  authMode: "tailscale" | "local";
 };
 
 export type AuthConfiguration = {
   ricoLogin: string;
   secondUserLogin: string;
   databasePath: string;
+  localDevUser: "admin" | "member" | null;
 };
+
+export const LOCAL_DEV_IDENTITIES = {
+  admin: { subject: "local-admin@ygh.invalid", displayName: "Lokaler Test-Admin", role: "admin" },
+  member: { subject: "local-member@ygh.invalid", displayName: "Lokaler Testbenutzer", role: "user" },
+} as const;
 
 export class AuthenticationError extends Error {
   constructor(
@@ -33,10 +40,36 @@ const unavailable = () =>
 
 export function readAuthConfiguration(
   environment: Record<string, string | undefined>,
+  localBuildAllowed = process.env.YGH_LOCAL_DEV_BUILD_ALLOWED === "true",
+  nodeEnvironment = process.env.NODE_ENV,
 ): AuthConfiguration {
+  const requestedLocalUser = environment.YGH_LOCAL_DEV_USER;
+  let localDevUser: AuthConfiguration["localDevUser"] = null;
+  if (requestedLocalUser !== undefined) {
+    if (
+      !localBuildAllowed ||
+      nodeEnvironment !== "development" ||
+      (requestedLocalUser !== "admin" && requestedLocalUser !== "member")
+    ) {
+      throw unavailable();
+    }
+    localDevUser = requestedLocalUser;
+  }
+
+  const databasePath = environment.DATABASE_PATH;
+  if (!databasePath || databasePath.trim() !== databasePath) throw unavailable();
+
+  if (localDevUser !== null) {
+    return {
+      ricoLogin: LOCAL_DEV_IDENTITIES.admin.subject,
+      secondUserLogin: LOCAL_DEV_IDENTITIES.member.subject,
+      databasePath,
+      localDevUser,
+    };
+  }
+
   const ricoLogin = environment.TAILSCALE_RICO_LOGIN;
   const secondUserLogin = environment.TAILSCALE_SECOND_USER_LOGIN;
-  const databasePath = environment.DATABASE_PATH;
 
   if (
     !ricoLogin ||
@@ -46,13 +79,16 @@ export function readAuthConfiguration(
     secondUserLogin.trim() !== secondUserLogin ||
     /[,\r\n]/.test(ricoLogin) ||
     /[,\r\n]/.test(secondUserLogin) ||
-    databasePath.trim() !== databasePath ||
     ricoLogin === secondUserLogin
   ) {
     throw unavailable();
   }
 
-  return { ricoLogin, secondUserLogin, databasePath };
+  return { ricoLogin, secondUserLogin, databasePath, localDevUser };
+}
+
+export function isLocalDevelopmentRequested(environment = process.env): boolean {
+  return environment.YGH_LOCAL_DEV_USER !== undefined;
 }
 
 type AuthDatabase = ReturnType<typeof openDatabase>["db"];
@@ -92,6 +128,7 @@ export async function resolveAuthenticatedUser(
       id: user.id,
       displayName: user.displayName,
       role: identityLogin === configuration.ricoLogin ? "admin" : "user",
+      authMode: configuration.localDevUser === null ? "tailscale" : "local",
     };
   } catch (error) {
     if (error instanceof AuthenticationError) {
@@ -108,9 +145,15 @@ export async function getCurrentUser(): Promise<AuthenticatedUser> {
 
   try {
     const requestHeaders = await headers();
+    if (configuration.localDevUser !== null && requestHeaders.get("host") !== "127.0.0.1:3001") {
+      throw new AuthenticationError("Zugriff verweigert.", 403, "unknown_identity");
+    }
     connection = openDatabase(configuration.databasePath);
+    const identityLogin = configuration.localDevUser === null
+      ? requestHeaders.get("Tailscale-User-Login")
+      : LOCAL_DEV_IDENTITIES[configuration.localDevUser].subject;
     return await resolveAuthenticatedUser(
-      requestHeaders.get("Tailscale-User-Login"),
+      identityLogin,
       configuration,
       connection.db,
     );

@@ -7,14 +7,15 @@ export const revalidate = 0;
 export default async function HomePage() {
   return withRequestContext(async (requestId) => {
     let accessMessage: string | null = null;
+    let currentUser: Awaited<ReturnType<typeof requireReadAccess>> | null = null;
     try {
-      await requireReadAccess();
+      currentUser = await requireReadAccess();
     } catch {
       // requireReadAccess already records failures in this request context.
       accessMessage = "Zugriff verweigert.";
     }
 
-    if (accessMessage) {
+    if (accessMessage || !currentUser) {
       return (
         <main className="startseite">
           <p className="marke">YGH</p>
@@ -37,12 +38,17 @@ export default async function HomePage() {
           </nav>
           <span className="private-label"><span aria-hidden="true" />Privat</span>
         </header>
+        {currentUser.authMode === "local" && (
+          <aside className="local-dev-banner" role="status">
+            Lokale Entwicklung · {currentUser.displayName} ({currentUser.role === "admin" ? "Admin" : "Mitglied"}) · nur synthetische Daten
+          </aside>
+        )}
         <main className="content" id="inhalt">
           <section className="welcome" aria-labelledby="welcome-title">
             <p className="eyebrow">Deine Sammlung</p>
             <h1 id="welcome-title">Deine Yu-Gi-Oh!-Sammlung</h1>
             <p className="intro">Der private Überblick für eure gemeinsame Kartensammlung.</p>
-            <p className="connection-note">Zum Verwenden brauchst du eine Internetverbindung und die freigegebene Tailscale-Verbindung.</p>
+            <p className="connection-note">{currentUser.authMode === "local" ? "Lokaler Entwicklungszugang auf diesem Rechner." : "Zum Verwenden brauchst du eine Internetverbindung und die freigegebene Tailscale-Verbindung."}</p>
           </section>
           <section className="empty-state" aria-labelledby="ready-title">
             <div className="empty-icon" aria-hidden="true">✦</div>

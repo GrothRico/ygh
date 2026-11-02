@@ -1,5 +1,7 @@
 # P0-04 – Privater Zugriff und Identität
 
+> Recherche-/Evidenzdokument mit dem unten genannten Abrufstand. Aktuelle Freigaben: [Entscheidungsregister](../entscheidungen.md) und [Aufgabenindex](../aufgaben/README.md). Aktuelle Anleitungen: [Entwicklung](../entwicklung.md) und [Betrieb](../betrieb.md). Einordnung: [Rechercheübersicht](README.md).
+
 **Recherche: 2026-10-21. Als Planungsgrundlage freigegeben; keine Implementierung oder Produktionsfreigabe.**
 
 ## Empfehlung

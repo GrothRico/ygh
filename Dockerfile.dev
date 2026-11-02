@@ -6,6 +6,9 @@ COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
 
 COPY --chown=node:node next.config.ts tsconfig.json next-env.d.ts drizzle.config.ts ./
+COPY --chown=node:node public ./public
+COPY --chown=node:node scripts/local-dev-init.ts ./scripts/local-dev-init.ts
+COPY --chown=node:node scripts/catalog-sync.mts ./scripts/catalog-sync.mts
 
 RUN mkdir -p /data \
   && chown node:node /app /data

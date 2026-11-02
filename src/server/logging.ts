@@ -9,6 +9,7 @@ type LogEvent = {
   status: number;
   durationMs: number;
   reason: "success" | "missing_identity" | "unknown_identity" | "inactive_user" | "auth_config" | "auth_database" | "origin" | "method" | "role" | "configuration" | "internal";
+  mode?: "local" | "tailscale";
 };
 
 const operationStorage = new AsyncLocalStorage<OperationContext>();
@@ -32,6 +33,7 @@ export function logEvent(event: LogEvent): void {
   if (!allowedEvents.includes(event.event) || !allowedReasons.includes(event.reason)) return;
   const status = Number.isInteger(event.status) && event.status >= 100 && event.status <= 599 ? event.status : 500;
   const durationMs = Number.isFinite(event.durationMs) ? Math.max(0, Math.round(event.durationMs)) : 0;
+  const mode = event.mode === "local" || event.mode === "tailscale" ? event.mode : undefined;
   const record = {
     timestamp: new Date().toISOString(),
     level: status >= 500 ? "error" : status >= 400 ? "warn" : "info",
@@ -40,6 +42,7 @@ export function logEvent(event: LogEvent): void {
     status,
     durationMs,
     reason: event.reason,
+    ...(mode ? { mode } : {}),
   };
   const output = JSON.stringify(record);
   if (status >= 500) process.stderr.write(`${output}\n`);

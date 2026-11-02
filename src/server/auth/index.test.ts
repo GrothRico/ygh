@@ -5,7 +5,7 @@ import { join } from "node:path";
 import Database from "better-sqlite3";
 import { headers } from "next/headers";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { AuthenticationError, getCurrentUser } from "./index";
+import { AuthenticationError, getCurrentUser, LOCAL_DEV_IDENTITIES, readAuthConfiguration } from "./index";
 
 vi.mock("server-only", () => ({}));
 vi.mock("next/headers", () => ({ headers: vi.fn() }));
@@ -171,6 +171,67 @@ describe("Tailscale-Authentifizierung", () => {
     await expect(getCurrentUser()).rejects.toMatchObject({
       statusCode: 503,
       message: "Authentifizierung ist derzeit nicht verfügbar.",
+    });
+  });
+
+  it("sperrt lokale Testidentitäten, wenn der Build sie nicht ausdrücklich erlaubt", () => {
+    expect(() => readAuthConfiguration({
+      DATABASE_PATH: "/tmp/local.sqlite",
+      YGH_LOCAL_DEV_USER: "admin",
+    }, false, "development")).toThrow(AuthenticationError);
+    expect(() => readAuthConfiguration({
+      DATABASE_PATH: "/tmp/local.sqlite",
+      YGH_LOCAL_DEV_USER: "admin",
+    }, true, "production")).toThrow(AuthenticationError);
+    expect(() => readAuthConfiguration({
+      DATABASE_PATH: "/tmp/local.sqlite",
+      YGH_LOCAL_DEV_USER: "root",
+    }, true, "development")).toThrow(AuthenticationError);
+  });
+
+  it("verwendet im erlaubten lokalen Modus die feste Identität statt manipulierbarer Requestwerte", async () => {
+    const databasePath = createTemporaryDatabasePath();
+    runMigration(databasePath);
+    addUser(databasePath, "local-admin", LOCAL_DEV_IDENTITIES.admin.subject);
+    configure(databasePath);
+    vi.stubEnv("YGH_LOCAL_DEV_BUILD_ALLOWED", "true");
+    vi.stubEnv("YGH_LOCAL_DEV_USER", "admin");
+    vi.stubEnv("NODE_ENV", "development");
+    requestAs("local-member@ygh.invalid", {
+      host: "127.0.0.1:3001",
+      "x-user-role": "user",
+      "x-local-dev-user": "member",
+      cookie: "YGH_LOCAL_DEV_USER=member",
+    });
+
+    await expect(getCurrentUser()).resolves.toMatchObject({
+      id: "local-admin",
+      role: "admin",
+      authMode: "local",
+    });
+
+    const sqlite = new Database(databasePath);
+    sqlite.prepare("UPDATE users SET active = 0 WHERE id = ?").run("local-admin");
+    sqlite.close();
+    await expect(getCurrentUser()).rejects.toMatchObject({
+      statusCode: 403,
+      reason: "inactive_user",
+    });
+  });
+
+  it("weist lokalen Zugriff mit einem anderen Host ab", async () => {
+    const databasePath = createTemporaryDatabasePath();
+    runMigration(databasePath);
+    addUser(databasePath, "local-admin", LOCAL_DEV_IDENTITIES.admin.subject);
+    configure(databasePath);
+    vi.stubEnv("YGH_LOCAL_DEV_BUILD_ALLOWED", "true");
+    vi.stubEnv("YGH_LOCAL_DEV_USER", "admin");
+    vi.stubEnv("NODE_ENV", "development");
+    requestAs(null, { host: "localhost:3001" });
+
+    await expect(getCurrentUser()).rejects.toMatchObject({
+      statusCode: 403,
+      reason: "unknown_identity",
     });
   });
 });

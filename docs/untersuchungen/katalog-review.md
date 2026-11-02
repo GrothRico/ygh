@@ -1,5 +1,7 @@
 # Reviewhistorie zu P0-01
 
+> Recherche-/Evidenzdokument mit dem unten genannten Abrufstand. Aktuelle Freigaben: [Entscheidungsregister](../entscheidungen.md) und [Aufgabenindex](../aufgaben/README.md). Aktuelle Anleitungen: [Entwicklung](../entwicklung.md) und [Betrieb](../betrieb.md). Einordnung: [Rechercheübersicht](README.md).
+
 **Aktueller Stand:** Der Benutzer hat P0-01 abgenommen und E01 freigegeben. Dieser Bericht hält die vorherige unabhängige Prüfung fest; seine damalige Empfehlung und der damalige Reviewstatus sind historisch.
 
 Datum: 21. Oktober 2026. Ausführung durch einen ausdrücklich beauftragten GPT-6-Luna-Subagenten, unabhängige Gegenprüfung durch den Hauptagenten. Gegenstand sind Recherche und Dokumentation, kein Anwendungscode.

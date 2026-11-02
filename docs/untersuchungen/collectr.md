@@ -1,5 +1,7 @@
 # Collectr-Export: Recherche und Importvertrag
 
+> Recherche-/Evidenzdokument mit dem unten genannten Abrufstand. Aktuelle Freigaben: [Entscheidungsregister](../entscheidungen.md) und [Aufgabenindex](../aufgaben/README.md). Aktuelle Anleitungen: [Entwicklung](../entwicklung.md) und [Betrieb](../betrieb.md). Einordnung: [Rechercheübersicht](README.md).
+
 **P0-02 · Recherche vom 2026-10-21 · Status: Vorschlag für Review**
 
 ## Ergebnis

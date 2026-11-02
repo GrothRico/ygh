@@ -51,6 +51,7 @@ a { color: inherit; }
 .nav-link { display: flex; align-items: center; height: 100%; padding: 0 0.3rem; color: #30477f; border-bottom: 2px solid #3757b8; font-size: 0.9rem; font-weight: 700; text-decoration: none; }
 .private-label { display: inline-flex; align-items: center; gap: 0.5rem; margin-left: auto; color: #53617a; font-size: 0.8rem; }
 .private-label span { width: 8px; height: 8px; background: #3c9a6b; border-radius: 50%; }
+.local-dev-banner { padding: 0.75rem 1.5rem; color: #5b3600; background: #fff0c2; border-bottom: 1px solid #e4c979; font-size: 0.9rem; font-weight: 600; }
 
 .content { width: min(100% - 2rem, 1060px); margin: 0 auto; flex: 1; padding: clamp(2.5rem, 7vw, 5.5rem) 0 4rem; }
 .welcome { max-width: 700px; }

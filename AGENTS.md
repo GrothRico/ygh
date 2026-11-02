@@ -2,9 +2,9 @@
 
 ## Aktueller Auftrag und Einstieg
 
-Die Implementierung beginnt mit dem ausdrücklich beauftragten P1-01. Aktueller Paketstatus und vorhandene Dateien sind vor jeder Arbeit zu prüfen. Implementiere weitere Pakete erst, wenn der Benutzer sie ausdrücklich beauftragt. Eine Aufgabenliste ist keine pauschale Implementierungsfreigabe.
+Implementiere ausschließlich das aktuell ausdrücklich beauftragte Paket. Aktueller Paketstatus und vorhandene Dateien sind vor jeder Arbeit zu prüfen. Implementiere weitere Pakete erst, wenn der Benutzer sie ausdrücklich beauftragt. Eine Aufgabenliste ist keine pauschale Implementierungsfreigabe.
 
-Lies zuerst `docs/arbeit-mit-llm.md`, den Eintrag des beauftragten Pakets in `docs/aufgaben/README.md`, seine Paketbeschreibung und nur die dort genannten Fachabschnitte. Prüfe danach den tatsächlichen Git- und Dateistand. Übernimm keine erfundenen Dateipfade, APIs oder Testbefehle aus einem Plan als bereits vorhanden.
+Lies zuerst `docs/arbeit-mit-llm.md`, bei Dokumentationsänderungen auch `docs/dokumentationsrichtlinien.md`, den Eintrag des beauftragten Pakets in `docs/aufgaben/README.md`, seine Paketbeschreibung und nur die dort genannten Fachabschnitte. Prüfe danach den tatsächlichen Git- und Dateistand. Übernimm keine erfundenen Dateipfade, APIs oder Testbefehle aus einem Plan als bereits vorhanden.
 
 ## Umfang
 
@@ -35,7 +35,8 @@ Lies zuerst `docs/arbeit-mit-llm.md`, den Eintrag des beauftragten Pakets in `do
 
 ## Prüfen und Abschluss
 
-- Verwende dokumentierte Befehle aus `docs/entwicklung.md`, sobald sie in P1-01 eingerichtet wurden. Bis dahin keine erfolgreichen Builds oder Tests behaupten.
+- Verwende die vorhandenen, dokumentierten Befehle aus `docs/entwicklung.md`. Behaupte nur tatsächlich ausgeführte Prüfungen.
+- Dokumentiere gemäß `docs/dokumentationsrichtlinien.md`: aktuellen Zustand, geplante Arbeit und historische Evidenz trennen; Paketstatus nur im Aufgabenindex laufend pflegen.
 - Tests prüfen fachliches Verhalten, nicht bloß Implementierungsdetails. Sicherheits-/Integritätsfehler nicht durch abgeschwächte Assertions verdecken.
 - Nach zwei erfolglosen Reparaturversuchen derselben Ursache keine weitere breite Änderungskette: Diagnose, Fehlerausgabe ohne Geheimnisse und offene Entscheidung übergeben. Bereits sichere Teilergebnisse klar benennen.
 - Berichte geänderte Dateien, zentrale Logik, tatsächlich ausgeführte Prüfungen mit Ergebnis, manuelle Prüfschritte und offene Grenzen. „Nicht ausgeführt“ ist kein „bestanden“.

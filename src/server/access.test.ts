@@ -6,6 +6,7 @@ import Database from "better-sqlite3";
 import { headers } from "next/headers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { currentRequestId, logEvent, withRequestContext } from "./logging";
+import { LOCAL_DEV_IDENTITIES } from "./auth";
 import {
   requireActionWriteAccess,
   withActionWriteAccess,
@@ -115,11 +116,12 @@ describe("serverseitiger Zugriffsschutz", () => {
           status: 200,
           durationMs: 1,
           reason: "success",
+          mode: "attacker-sentinel",
           requestId: "attacker-sentinel",
           password: "pass-TOKEN",
           cookie: "cookie-TOKEN",
           nested: { token: "token-TOKEN" },
-        } as Parameters<typeof logEvent>[0]);
+        } as unknown as Parameters<typeof logEvent>[0]);
         const [chunk] = stdout.mock.calls.at(-1) ?? [];
         const record = JSON.parse(String(chunk)) as Record<string, unknown>;
         expect(record).toEqual({
@@ -407,5 +409,62 @@ describe("serverseitiger Zugriffsschutz", () => {
     requestHeaders(logins.user, { Origin: origin, Host: "cards.example.ts.net" });
     await expect(protectedAction()).rejects.toMatchObject({ statusCode: 403 });
     expect(actionCallback).not.toHaveBeenCalled();
+  });
+
+  it("prüft lokale Schreibzugriffe mit fester Origin, Host und Rolle", async () => {
+    addUser(databasePath, "local-admin", LOCAL_DEV_IDENTITIES.admin.subject);
+    addUser(databasePath, "local-member", LOCAL_DEV_IDENTITIES.member.subject);
+    vi.stubEnv("YGH_LOCAL_DEV_BUILD_ALLOWED", "true");
+    vi.stubEnv("YGH_LOCAL_DEV_USER", "admin");
+    vi.stubEnv("NODE_ENV", "development");
+    requestHeaders(null, { Host: "127.0.0.1:3001" });
+
+    const callback = vi.fn(() => new Response("ok"));
+    const response = await withWriteAccess(
+      new Request("http://127.0.0.1:3001/api/example", {
+        method: "POST",
+        headers: { Origin: "http://127.0.0.1:3001", Host: "127.0.0.1:3001" },
+      }),
+      callback,
+      "admin",
+    );
+    expect(response.status).toBe(200);
+    expect(callback).toHaveBeenCalledOnce();
+
+    const rejectedRequests = [
+      new Request("http://127.0.0.1:3001/api/example", {
+        method: "GET",
+        headers: { Origin: "http://127.0.0.1:3001", Host: "127.0.0.1:3001" },
+      }),
+      new Request("http://127.0.0.1:3001/api/example", {
+        method: "POST",
+        headers: { Origin: "https://attacker.invalid", Host: "127.0.0.1:3001" },
+      }),
+      new Request("http://127.0.0.1:3001/api/example", {
+        method: "POST",
+        headers: { Origin: "http://127.0.0.1:3001", Host: "localhost:3001" },
+      }),
+      new Request("http://127.0.0.1:3001/api/example", {
+        method: "POST",
+        headers: { Host: "127.0.0.1:3001" },
+      }),
+    ];
+    const expectedStatuses = [405, 403, 403, 403];
+    for (const [index, request] of rejectedRequests.entries()) {
+      expect((await withWriteAccess(request, callback)).status).toBe(expectedStatuses[index]);
+    }
+    expect(callback).toHaveBeenCalledOnce();
+
+    vi.stubEnv("YGH_LOCAL_DEV_USER", "member");
+    const denied = await withWriteAccess(
+      new Request("http://127.0.0.1:3001/api/example", {
+        method: "POST",
+        headers: { Origin: "http://127.0.0.1:3001", Host: "127.0.0.1:3001" },
+      }),
+      callback,
+      "admin",
+    );
+    expect(denied.status).toBe(403);
+    expect(callback).toHaveBeenCalledOnce();
   });
 });

@@ -2,9 +2,9 @@
 
 Ziel ist eine nachvollziehbare Umsetzung durch ein günstiges Coding-Modell. Kleine Aufgaben ersetzen nicht fachliche Prüfungen, reduzieren aber die Zahl der Entscheidungen, die das Modell gleichzeitig treffen muss. Dieser Ablauf ist bewusst manuell; es wird kein Agenten-Orchestrator gebaut.
 
-## Aktueller Stand
+## Einstieg
 
-P1-01 bis P1-13 sind abgenommen. P0-06/E06 wurde am 2026-10-27 als Planungsgrundlage freigegeben. P1-14 ist auf ausdrücklichen Wunsch zurückgestellt; es gibt noch keinen echten Server und keinen Betriebsauftrag. P1-15 verwendet das vom Benutzer festgelegte private GitHub-Repository; dessen Sichtbarkeit wurde beim Push unabhängig geprüft. Das Remote `origin` zeigt auf dieses Repository; `codex/p1-15-ci` enthält den Prüfstand. Der erste Hosted-Lauf scheiterte an vier hostbezogenen Tests wegen der Runner-UID; die CI-Korrektur bestand anschließend den Hosted-Lauf [40678791115](https://github.com/GrothRico/ygh/actions/runs/40678791115). P1-15 steht im Status Review. Für P1-12 bleiben die dokumentierten Live-Gates vor Nutzung echter Sammlungsdaten erforderlich: kein externes Speicherziel, Live-Alarm, Serverjob oder Restore mit echten Nutzdaten wurde praktisch eingerichtet. Der [Zwischenbericht](zwischenbericht-2026-10-22.md) bleibt ein unveränderter historischer Snapshot. [Aufgabenindex](aufgaben/README.md) und [Entscheidungsregister](entscheidungen.md) bleiben maßgeblich.
+Der [Aufgabenindex](aufgaben/README.md) nennt den aktuellen Stand, offene Freigaben und eine etwaige Pause. [Dokumentationsübersicht](README.md) und [Dokumentationsrichtlinien](dokumentationsrichtlinien.md) trennen aktuelle Anleitungen von historischen Berichten. Vor jedem Auftrag Git-/Dateistand prüfen; eine alte Übergabe ist keine neue Implementierungsfreigabe.
 
 ## Rollen im aktuellen Projekt
 
@@ -31,7 +31,7 @@ Die unabhängige kritische Prüfung und die Abnahmekriterien bleiben bei jeder S
 3. Modell setzt nur dieses Paket um und prüft dessen konkrete Abnahme. Normale Implementierungsentscheidungen darf es innerhalb des vereinbarten Rahmens selbst treffen.
 4. Ergebnis geht in den Status `Review`. Es enthält überprüfbare Befunde statt „sollte funktionieren“.
 5. Review und praktischer Test prüfen das Ergebnis. Nach fachlicher Freigabe setzt der Benutzer beziehungsweise ein ausdrücklich beauftragter Dokumentationsschritt den Status auf `Abgenommen`.
-6. Geprüfte Änderung als eigener Git-Commit sichern. Bei eingerichtetem Remote kann pro Paket ein Branch/PR verwendet werden. Merge und Produktionsdeployment sind getrennte Entscheidungen.
+6. Geprüfte Änderungen bei ausdrücklichem Git-Auftrag als eigenen Commit sichern. Branch/PR bei Bedarf; Commit, Push, Merge und Produktionsdeployment nicht aus einer Paketliste ableiten.
 
 Ein Review kann im frischen Chat mit demselben günstigen Modell erfolgen. Authentifizierung, Bestands-Transaktionen, Restore und Draft-Mengenerhaltung brauchen eine besonders sorgfältige unabhängige Prüfung; bei ungelösten Befunden stärkere Expertise oder ein stärkeres Modell hinzuziehen. Das kostet punktuell weniger als dauernde Umwege durch ungeklärte Architektur. Modellreview ist kein Sicherheitsnachweis.
 
@@ -47,9 +47,7 @@ Nur die aktuell ausgewählte Paketbeschreibung ist Umsetzungskontext. Die weiter
 
 ## Git und Arbeitsstand
 
-Vor Änderungen `git status` prüfen. Ausgangspunkt und bereits vorhandene Änderungen in der Übergabe nennen. Ein sauberes Repository ist vorzuziehen; fremde Änderungen werden niemals bereinigt. Der Benutzer sollte die Planungsdokumente vor der Implementierung als Ausgangsstand committen. Aktuell wurde kein Commit durch diesen Planungsschritt erstellt.
-
-Vorschlag für Branches: `codex/p1-01-grundgeruest`. Keine Annahme über vorhandenes GitHub-Remote oder CI. Lokale Prüfung funktioniert auch ohne Remote. Erst wenn ein Remote tatsächlich festgelegt ist, die dazu passende CI einrichten.
+Vor Änderungen `git status` prüfen. Ausgangspunkt und vorhandene Änderungen in der Übergabe nennen; fremde Änderungen niemals bereinigen. Remote und Branch tatsächlich prüfen. Repository-CI ist in `.github/workflows/ci.yml` implementiert; lokale Befehle stehen in [Entwicklung](entwicklung.md). Neue Branches verwenden standardmäßig `codex/<paket>-<thema>`. Kein Commit oder Push ohne Auftrag.
 
 ## Status
 
@@ -61,7 +59,7 @@ Vorschlag für Branches: `codex/p1-01-grundgeruest`. Keine Annahme über vorhand
 | Review | Umsetzung und Selbstprüfung übergeben; noch nicht abgenommen. |
 | Abgenommen | Menschliche Freigabe dokumentiert, inklusive verbleibender Einschränkungen. |
 
-Der Index enthält den Status; keine zweite konkurrierende Statusliste anlegen. Paketbeschreibungen bleiben die Abnahmereferenz. Freigaben, relevante Testbefunde und akzeptierte Einschränkungen können direkt im Index unter der Paket-ID notiert werden.
+Der Index enthält den Status; keine zweite konkurrierende Statusliste anlegen. Paketbeschreibungen bleiben die Abnahmereferenz. Freigaben und akzeptierte Einschränkungen stehen knapp im Index. Ausführliche Testbefunde gehören in datierte Prüfprotokolle und werden verlinkt.
 
 ## Startprompt
 

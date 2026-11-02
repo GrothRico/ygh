@@ -1,6 +1,6 @@
 # Datenmodell
 
-Dies ist ein logischer Schemaentwurf für SQLite und Drizzle. Feldnamen sind Vorschläge für die Implementierung. Tabellen werden mit dem jeweiligen Meilenstein eingeführt, nicht vollständig vorab gebaut. Fremdschlüssel, positive Mengen und atomare Bestandsänderungen sichern die wesentlichen Regeln.
+Dieses Dokument trennt eingeführtes Schema von weiterem Entwurf. `users`, `cards`, `sets`, `variants` und `printings` sind implementiert; die übrigen Tabellen bleiben Vorschläge für spätere ausdrücklich beauftragte Pakete. Paketstatus stehen im [Aufgabenindex](aufgaben/README.md). Fremdschlüssel, positive Mengen und atomare Bestandsänderungen sind verbindliche fachliche Regeln.
 
 ## Benutzer und Standorte
 
@@ -14,18 +14,22 @@ Ein Personenstandort ist ein Wurzelknoten mit `person_id`. Alle darunterliegende
 
 ## Katalog und Sammelziele
 
-| Tabelle | Wesentliche Felder | Bedeutung |
+| Tabelle | Implementierte wesentliche Felder | Bedeutung |
 | --- | --- | --- |
-| `cards` | `id`, `name_de`, `name_en`, Spielwerte, Effekttexte, `image_key` | Gameplay-Identität unabhängig vom Druck. |
-| `sets` | `id`, `name`, `code`, `catalog_status` | Set und Prüfstatus seines Variantenkatalogs. |
-| `variants` | `id`, `card_id`, `set_id`, `collector_number`, `edition`, `rarity`, `artwork_key`, `version_note` | Sprachunabhängiges Ziel für Set-Vervollständigung. |
-| `printings` | `id`, `variant_id`, `language`, `printed_code`, `source`, `source_id` | Konkreter Katalogdruck mit Sprachcode und externer Referenz. |
+| `cards` | `id`, `name_de?`, `name_en?`, `effect_de?`, `effect_en?`, `source?`, `source_id?` | Gameplay-Identität unabhängig vom Druck; mindestens ein nichtleerer Name ist nötig. Fremd-IDs sind nur mit Quelle gesetzt und quellengebunden eindeutig. |
+| `sets` | `id`, `name`, `code`, `catalog_status`, `source?`, `source_id?` | Set; Status ist `unreviewed`, `partial` oder `complete`. Neue API-Sets beginnen bei `partial`; Fremd-IDs sind quellengebunden. |
+| `variants` | `id`, `card_id`, `set_id`, `collector_number`, `edition`, `rarity`, `artwork_key` | Sprachunabhängiges, ausdrücklich belegtes Ziel für Set-Vervollständigung. |
+| `printings` | `id`, `variant_id`, `language`, `printed_code`, `source`, `source_id` | Konkreter Katalogdruck mit expliziter Sprach- und Quellenzuordnung. |
+| `source_printing_observations` | `id`, `card_id`, `source`, `card_source_id`, `set_name`, `printed_code`, `rarity`, `rarity_code?` | Unbestätigte Druckangaben aus einer Quelle; keine bestätigte Set-, Sprach-, Editions- oder Artworkzuordnung. |
+| `catalog_sync_status` | `source`, Versuch/Erfolg, Quellversion/-datum, Status, Fehlercode, Konfliktanzahl/-kurzliste | Ergebnis des letzten manuellen Quellimports. Fehlversuche erhalten den letzten erfolgreichen Stand. |
 
-`variants` enthalten ausschließlich belegte Kombinationen. Edition ist beispielsweise `first`, `unlimited` oder `not_applicable`. Unbekannte Daten erzeugen nicht automatisch ein verifiziertes Sammelziel. Seltenheit und Artwork können aus einer eindeutigen Auswahl folgen, ohne in der Eingabe zusätzlich abgefragt zu werden.
+`variants` enthalten ausschließlich belegte Kombinationen. Der aktuelle Schemawert für Edition ist `first`, `unlimited` oder `not_applicable`; unbekannte Editionen bilden keine Variante. Seltenheit und Artwork sind eigene, nicht nullable Merkmale und gehen in die eindeutige Variantenidentität ein. Abgeleitete Werte wie Angriff, Verteidigung, Kartentypen und Bilder sind noch nicht im Schema und brauchen spätere, quellengeprüfte Ergänzung.
 
-Deutsch und Englisch dürfen auf dasselbe `variant_id` zeigen. Codes werden nicht durch blindes Entfernen von Sprachkürzeln vereinheitlicht; die Zuordnung muss anhand des Katalogs erfolgen. Separate Kartenidentitäten bleiben erhalten, wenn sich die tatsächlichen Karten unterscheiden.
+Deutsch und Englisch dürfen auf dasselbe `variant_id` zeigen. Sprache und Druckcode werden ausdrücklich je Druck gespeichert; Sprache wird weder aus Namen abgeleitet noch aus Codes normalisiert. Separate Kartenidentitäten bleiben erhalten, wenn sich die tatsächlichen Karten unterscheiden.
 
-Externe IDs werden nicht zu internen Primärschlüsseln. Dadurch können Katalogquellen ergänzt und falsche Zuordnungen korrigiert werden. Sprachvarianten von Namen sind Suchbegriffe derselben Karte.
+Interne IDs sind unabhängig von externen IDs. Bei `cards`, `sets` und `printings` ist `source_id` nur zusammen mit `source` eindeutig. Die YGOPRODeck-Karten-ID verknüpft deutsche und englische Antworten; eine fehlende deutsche Antwort löscht keine vorhandene Übersetzung. Set-IDs werden aus dem JSON-Tupel von Quell-Setcode und Setname gebildet. Gleiche Setcodes mit verschiedenen Namen bleiben getrennt und werden als Konflikt angezeigt; Namensänderungen werden nicht unscharf zusammengeführt.
+
+YGOPRODecks `card_sets`-Angaben werden als Quellbeobachtungen gespeichert. Sie liefern keine Editionsangabe und verknüpfen Druckcodes nicht mit den separaten Bild-IDs. Daher erzeugt die Synchronisation daraus keine `variants` oder `printings`. Quellbeobachtungen sind keine bestätigten Sammelziele; manuell bestätigte Varianten und Drucke werden durch Quellupdates nicht verändert. Die API-ID ist eine quellengebundene Fremdreferenz ohne Stabilitätsgarantie, und der Import behauptet keine vollständige Druckabdeckung.
 
 ## Physische Bestände
 

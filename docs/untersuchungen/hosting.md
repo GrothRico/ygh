@@ -1,5 +1,7 @@
 # Hosting- und Backupkosten (P0-03)
 
+> Recherche-/Evidenzdokument mit dem unten genannten Abrufstand. Aktuelle Freigaben: [Entscheidungsregister](../entscheidungen.md) und [Aufgabenindex](../aufgaben/README.md). Aktuelle Anleitungen: [Entwicklung](../entwicklung.md) und [Betrieb](../betrieb.md). Einordnung: [Rechercheübersicht](README.md).
+
 Stand und Abruf der Anbieterpreise: 21. Oktober 2026. Beträge sind laufende Monatspreise, sofern nicht anders vermerkt. Geprüft wurden zwei budgetnahe VPS sowie ein teurerer 4-GB-Vergleich. **Aktuelle Planungswahl:** Hetzner CX23 mit IPv4, vorbehaltlich erneuter Lieferbarkeits- und Preisprüfung vor der manuellen Bestellung. netcup war die historische Empfehlung des ursprünglichen Kostenvergleichs. Es wurde nichts bestellt.
 
 ## Ergebnis

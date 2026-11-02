@@ -1,28 +1,13 @@
 # Yu-Gi-Oh Sammlung und Deckbau
 
-Private Anwendung für zwei Brüder zur Verwaltung von ungefähr 15.000 Karten, ihren physischen Standorten, Decks und Cubes. Bedienung auf Deutsch im Desktop-Browser sowie auf iPhone und Android als installierbare Web-App.
+Private deutschsprachige Webanwendung für zwei Brüder: rund 15.000 Karten, ihre physischen Standorte, Decks und Cubes. Geplant für Desktop, iPhone und Android über Tailscale.
 
-P1-01 bis P1-10 sind abgenommen. P1-11 enthält den lokalen Backupjob und steht nach Implementierung und Prüfungen auf Review. Kein B2-Konto, echter Zielhost, Timerlauf oder Restore wurde eingerichtet beziehungsweise ausgeführt. Kartenverwaltung und Produktivbetrieb sind noch nicht fertig; den Wiedereinstieg beschreibt der [Zwischenbericht](docs/zwischenbericht-2026-10-22.md).
+Vorhanden sind das technische Grundgerüst, Zugriffsschutz, Docker-/Ansible-Werkzeuge, Backup-/Restore-Helfer, CI, eine responsive Anwendungshülle und das Katalogschema. **Kartenverwaltung und Produktivbetrieb sind noch nicht fertig.** Maßgeblich für weitere Aufträge sind [Paketstatus und Freigaben](docs/aufgaben/README.md).
 
-## Projektdokumentation
+- [Dokumentationsübersicht](docs/README.md): Einstieg und Zuständigkeit jeder Datei.
+- [Entwicklung](docs/entwicklung.md): lokale Einrichtung, Prüfungen und Fehlersuche.
+- [Betrieb](docs/betrieb.md): vorbereitete Abläufe und offene Live-Prüfungen.
+- [Projektspezifikation](docs/projektspezifikation.md): Funktionsumfang und Bestandsregeln.
+- [Arbeitsregeln](AGENTS.md), [LLM-Arbeitsweise](docs/arbeit-mit-llm.md) und [Dokumentationsrichtlinien](docs/dokumentationsrichtlinien.md).
 
-- [Projektspezifikation](docs/projektspezifikation.md): Funktionsumfang, verbindliche Regeln, technische Architektur, Sicherheit und Betrieb.
-- [Datenmodell](docs/datenmodell.md): Tabellen, Beziehungen und konkrete Abläufe.
-- [Meilensteine](docs/meilensteine.md): Umsetzungsschritte mit überprüfbaren Abnahmekriterien und offenen Untersuchungen.
-- [Arbeitsablauf mit einem LLM](docs/arbeit-mit-llm.md): kleine Einzelaufträge, Review und fertige Start-/Reviewprompts.
-- [Aufgabenindex](docs/aufgaben/README.md): getrennte Arbeitspakete für alle Meilensteine, jeweils mit Abhängigkeiten und Abnahme.
-- [Arbeitsregeln für Agents](AGENTS.md): verbindliche Grenzen für Umfang, Sicherheit und Abschluss.
-- [Entscheidungsregister](docs/entscheidungen.md): beschlossene Architektur und noch zu klärende technische Verträge.
-- [Entwicklungsprüfungen](docs/entwicklung.md): lokale Einrichtung, Befehle und Prüfmatrix.
-
-## Umsetzung starten
-
-Ein günstiges Coding-Modell bekommt jeweils genau eine Paket-ID aus dem Aufgabenindex. Zuerst werden die offenen technischen Verträge in P0 geklärt; anschließend folgt die Implementierung in kleinen Schritten. Die Planung allein autorisiert keine Implementierung, Bestellung oder produktive Ausführung. Der Aufgabenindex unterscheidet geplante, laufende und geprüfte Pakete.
-
-## Technische Richtung
-
-TypeScript, Next.js, SQLite mit Drizzle, Docker Compose und Ansible auf einem gemieteten Linux-VPS. Zugriff ausschließlich privat über Tailscale. Planungswahl ist Hetzner CX23 mit IPv4 und externem Backup, grob 7,21 € pro Monat bei den dokumentierten Annahmen. Bestellung erfolgt manuell; Details stehen im Entscheidungsregister.
-
-Eine Anwendung, eine Datenbank und wenige Dienste. Fachlogik bleibt in normalen TypeScript-Modulen. Keine Microservices, kein Kubernetes, keine allgemeine Regelmaschine und keine automatisierte Yu-Gi-Oh!-Spielengine.
-
-Stand: 27. Oktober 2026; P1-10 abgenommen, P1-11 im Review.
+Eine TypeScript-/Next.js-Anwendung, SQLite/Drizzle, Docker Compose und Ansible. Privater Zugriff über Tailscale Serve; kein öffentlicher Appzugang. Entscheidungen und Gründe stehen im [Entscheidungsregister](docs/entscheidungen.md), historische Zwischenberichte und Prüfprotokolle sind in der [Dokumentationsübersicht](docs/README.md#belege-und-historie) verlinkt.

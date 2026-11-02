@@ -1,0 +1,22 @@
+services:
+  local:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: ygh:local-dev
+    platform: linux/amd64
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+      YGH_LOCAL_DEV_USER: ${YGH_LOCAL_DEV_USER-admin}
+      DATABASE_PATH: /data/collection-local.sqlite
+    ports:
+      - "127.0.0.1:3001:3000"
+    volumes:
+      - local-data:/data
+      - ./src:/app/src:ro
+    command: ["sh", "-c", "node scripts/local-dev-init.ts && ./node_modules/.bin/next dev --hostname 0.0.0.0"]
+    init: true
+
+volumes:
+  local-data:

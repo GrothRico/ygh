@@ -1,5 +1,7 @@
 # P0-05 – Entwicklungsvertrag
 
+> Recherche-/Evidenzdokument mit dem unten genannten Abrufstand. Aktuelle Freigaben: [Entscheidungsregister](../entscheidungen.md) und [Aufgabenindex](../aufgaben/README.md). Aktuelle Anleitungen: [Entwicklung](../entwicklung.md) und [Betrieb](../betrieb.md). Einordnung: [Rechercheübersicht](README.md).
+
 Historischer Planungsstand: 2026-10-21; Lint-Auswahl aktualisiert am 2026-10-22. Die folgenden Aussagen zu noch ausstehenden Installationen beziehen sich auf den Planungszeitpunkt; durchgeführte P1-01-Prüfungen stehen in [Entwicklung](../entwicklung.md). Der Benutzer hat diesen Entwicklungsplan als Planungsgrundlage freigegeben; damit ist keine Implementierung freigegeben. Keine Pakete wurden installiert; die Versions- und Kompatibilitätsprüfung stützt sich auf die an diesem Datum sichtbaren offiziellen Releaseangaben, Paketmetadaten und Projektdokumentation. Installation und Lockfile-Auflösung bleiben P1-01/P1-02, native Builds und Produktionsimage P1-06 vorbehalten.
 
 ## Auswahl

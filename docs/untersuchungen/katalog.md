@@ -1,5 +1,7 @@
 # Katalogabdeckung Yu-Gi-Oh! TCG
 
+> Recherche-/Evidenzdokument mit dem unten genannten Abrufstand. Aktuelle Freigaben: [Entscheidungsregister](../entscheidungen.md) und [Aufgabenindex](../aufgaben/README.md). Aktuelle Anleitungen: [Entwicklung](../entwicklung.md) und [Betrieb](../betrieb.md). Einordnung: [Rechercheübersicht](README.md).
+
 **Paket:** P0-01 · **Recherche-/Abrufdatum:** 2026-10-21 · **Aktueller Status:** Abgenommen (mit dokumentierten Grenzen). E01 ist freigegeben. Frühere Reviewformulierungen weiter unten sind historische Prüfnotizen.
 
 ## Ergebnis

@@ -1,6 +1,6 @@
 # Projektspezifikation
 
-Stand: 21. Oktober 2026. Die fachlichen Regeln dieses Dokuments bilden die vereinbarte Grundlage. Mit „Vorschlag“ bezeichnete Details sind Implementierungsdefaults; offene Untersuchungen stehen im Meilensteinplan. Produktname und Hosting-Anbieter sind noch offen.
+Fachliche Grundlage, Stand 21. Oktober 2026; aktueller Projektstand ergänzt am 2. November 2026. Die fachlichen Regeln bleiben maßgeblich. Dieses Dokument beschreibt das Zielprodukt, nicht den vollständigen Ist-Stand; Karten-, Deck- und Cube-Funktionen sind noch nicht implementiert. Technische Beschlüsse und deren Umsetzungsstand stehen im [Entscheidungsregister](entscheidungen.md), Paketstatus im [Aufgabenindex](aufgaben/README.md). Produktname bleibt offen; Hosting ist mit Hetzner CX23 als Planungsgrundlage entschieden, aber noch nicht bestellt.
 
 ## Ziel und Leitlinien
 
@@ -58,7 +58,7 @@ Der Import verarbeitet Collectr-CSV direkt. Portfolios werden in der Vorschau au
 
 Die öffentlich dokumentierten Fremdimporter nennen unter anderem `Portfolio Name`, `Category`, `Product Name`, `Set`, `Card Number`, `Variance`, `Rarity`, `Quantity`, `Card Condition`, `Grade`, `Average Cost Paid`, `Price Override`, `Watchlist`, `Date Added` und einen datierten Marktpreis. Dies ist eine vorläufige Adaptergrundlage, keine garantierte offizielle Collectr-Schnittstelle.
 
-Spalten werden anhand ihrer Namen erkannt; Reihenfolge und zusätzliche Spalten dürfen variieren. Die tatsächliche Kodierung von Yu-Gi-Oh!-Editionen, Sprache und Artwork muss noch verifiziert werden. Kartennamen auf Englisch beweisen keine englische Kartensprache. Fehlende Angaben bleiben unbekannt.
+Spalten werden anhand ihrer Namen erkannt; Reihenfolge und zusätzliche Spalten dürfen variieren. Die tatsächliche Kodierung von Yu-Gi-Oh!-Editionen, Sprache und Artwork ist weiterhin ungeprüft, da kein echter Collectr-Export vorliegt. Kartennamen auf Englisch beweisen keine englische Kartensprache. Fehlende Angaben bleiben unbekannt.
 
 Ablauf: Datei prüfen → Vorschau → Portfolios zuordnen → eindeutige Treffer und ungeklärte Zeilen zeigen → Übernahme bestätigen → Mengenbericht je Portfolio. Originaldatei und Originalzeilen bleiben erhalten. Watchlist-Zeilen werden nicht als physischer Bestand gezählt. Nicht importierte Zeilen werden mit Grund ausgewiesen.
 
@@ -112,21 +112,21 @@ Next.js und TypeScript bilden Oberfläche und Server. Drizzle verwaltet ein SQLi
 
 Eine Anwendungsinstanz greift auf die SQLite-Datei auf lokaler VPS-Festplatte zu. Bestandsänderungen erfolgen in kurzen Transaktionen mit erneuter Mengenprüfung. Keine Datenbank auf einem Netzwerkdateisystem, keine horizontale Skalierung, kein separater Suchdienst. Fuzzy-Suche wird zunächst im Katalog und mit einfachen Indizes umgesetzt.
 
-Docker Compose startet Anwendung und gegebenenfalls Caddy als internen Reverse-Proxy. Datenbank, Bilder und Importdateien liegen in persistenten Volumes. Lokale Entwicklung unterstützt Hot Reload. Ein Produktionsimage enthält einen festgelegten Build und läuft ohne unnötige Rechte. Der Docker-Socket wird nicht an die Anwendung durchgereicht.
+Docker Compose startet die Anwendung. Tailscale Serve liefert privates HTTPS; Caddy ist nicht vorgesehen. Datenbank, Bilder und Importdateien liegen in persistenten Volumes. Lokale Entwicklung unterstützt Hot Reload. Ein Produktionsimage enthält einen festgelegten Build und läuft ohne unnötige Rechte. Der Docker-Socket wird nicht an die Anwendung durchgereicht.
 
 ## Privater Zugriff und Sicherheit
 
 Tailscale verbindet VPS, Smartphones und Computer. Nur die zwei freigegebenen Benutzer und genehmigte Geräte erhalten Anwendungszugriff. Explizite Netzwerkregeln ersetzen eine pauschale Freigabe aller Geräte. Administrationszugang erhält zunächst nur Rico. Keine öffentliche Registrierung, kein öffentlicher Anwendungs-, Datenbank- oder SSH-Port nach Einrichtung. Zugang über die Anbieter-Konsole bleibt als dokumentierter Wiederherstellungsweg erhalten.
 
-HTTPS bleibt auch im privaten Netzwerk vorgesehen. Tailscale Serve oder Caddy mit passender privater Zertifikatskonfiguration wird beim Infrastrukturversuch ausgewählt; öffentliche Ports werden nicht nur für Zertifikate geöffnet. Eine eigene Domain ist bei einer geeigneten Tailscale-Adresse möglicherweise unnötig. Tailscale Funnel wird nicht eingesetzt.
+HTTPS wird im privaten Netzwerk über Tailscale Serve bereitgestellt; die App ist nur an Host-Loopback veröffentlicht. Funnel bleibt aus; öffentliche Anwendungsports werden nicht geöffnet. Der beschlossene Zugang nutzt einen privaten `*.ts.net`-Namen ohne eigene Domain.
 
-Die Anwendung authentifiziert die zwei Benutzer und prüft Zugriffe serverseitig auch für Bilder, Exporte und Dateien. Identitätsintegration und Bibliothek werden in Meilenstein 0 ausgewählt. Falls Proxy-Identitätsheader verwendet werden, darf kein direkter Zugriff auf die Anwendung oder ein vom Client gefälschter Header möglich sein. Netzwerkmitgliedschaft allein ersetzt keine saubere Benutzerzuordnung.
+Die Anwendung ordnet die zwei erlaubten Tailscale-Identitäten serverseitig zu und prüft Zugriffe auch für Bilder, Exporte und Dateien. Tailscale Serve ersetzt vom Client gesendete Identitätsheader; die App prüft Identität, Aktivstatus und Rolle bei jedem geschützten Serveraufruf. Der Host bleibt Teil der Proxy-Vertrauensgrenze.
 
-MFA beim Identitätsanbieter, bevorzugt Passkeys; keine selbst entwickelte Kryptografie. Sitzungen, CSRF-/Origin-Prüfungen, Eingabevalidierung, parametrisierte Abfragen, begrenzte Uploads und sichere Dateipfade sind Teil der Implementierung. Geheimnisse werden über Ansible Vault beziehungsweise geschützte Laufzeitdateien verwaltet und nicht ins Klartext-Repository geschrieben.
+MFA beim Identitätsanbieter, bevorzugt Passkeys; keine selbst entwickelte Kryptografie. Der Sitzungszustand liegt bei Tailscale/IdP, es gibt keine App-Cookie-Sitzung oder App-Logout. CSRF-/Origin-Prüfungen, Eingabevalidierung, parametrisierte Abfragen, begrenzte Uploads und sichere Dateipfade sind Teil der Implementierung. Geheimnisse werden über Ansible Vault beziehungsweise geschützte Laufzeitdateien verwaltet und nicht ins Klartext-Repository geschrieben.
 
 ## Infrastruktur und Betrieb
 
-Gemieteter Linux-VPS: Hetzner CX23 mit IPv4 ist die freigegebene Planungsgrundlage, ca. 7,13 € brutto pro Monat vor externem Backup (Preisstand 2026-10-21). Die Abweichung vom ursprünglichen Zielbudget von ungefähr 5 € ist im Kostenvergleich dokumentiert. Der Benutzer bestellt manuell und prüft dabei Endpreis und Verfügbarkeit. Backupziel und Alarmkanal werden in P0-06 konkretisiert.
+Gemieteter Linux-VPS: Hetzner CX23 mit IPv4 ist die freigegebene Planungsgrundlage, ca. 7,13 € brutto pro Monat vor externem Backup (Preisstand 2026-10-21). Die Abweichung vom ursprünglichen Zielbudget von ungefähr 5 € ist im Kostenvergleich dokumentiert. Der Benutzer bestellt manuell und prüft dabei Endpreis und Verfügbarkeit. Restic mit Backblaze B2 EU Central und Healthchecks.io sind in P0-06 als Planungsgrundlage freigegeben. Implementierung ist lokal vorhanden; Live-Einrichtung und Betriebsprüfung sind offen.
 
 Ansible übernimmt Einrichtung, Firewall, Docker, Verzeichnisse, private Erreichbarkeit, Deployment, Backup-Jobs und Loglimits. Die VPS-Erstellung erfolgt manuell durch den Benutzer; Ansible konfiguriert anschließend den vorhandenen Server. Terraform/OpenTofu sind nicht zusätzlich vorgesehen.
 
@@ -134,32 +134,27 @@ Deployments erhalten persistente Daten. Vor Schemaänderungen wird gesichert. Mi
 
 ## Backups und Wiederherstellung
 
-Vorgeschlagener Start: täglich konsistente SQLite-Sicherung, 30 tägliche und 12 monatliche Wiederherstellungspunkte. SQLite-Backup-Mechanismus statt bloßem Kopieren einer laufenden Datenbankdatei. Benötigte Importoriginale und nicht rekonstruierbare Dateien werden mitgesichert; rekonstruierbare Katalogbilder können aus dem Katalog wiederhergestellt werden.
+Vereinbart ist eine tägliche konsistente SQLite-Sicherung; Retention und Betriebsparameter stehen verbindlich in [E06](entscheidungen.md#e06--sicherung-und-betriebsprüfung). SQLite-Backup-Mechanismus statt bloßem Kopieren einer laufenden Datenbankdatei. Benötigte Importoriginale und nicht rekonstruierbare Dateien werden mitgesichert; rekonstruierbare Katalogbilder können aus dem Katalog wiederhergestellt werden.
 
-Sicherungen liegen verschlüsselt außerhalb des VPS. Wiederherstellungsschlüssel werden separat verwahrt. Kosten und Speichermenge werden vor Auswahl geprüft. Tägliche Sicherung bedeutet im Fehlerfall bis zu ungefähr einem Tag Datenverlust. Es gibt einen vollständigen Export und einen dokumentierten Restore-Test auf einer frischen Instanz. Backup-Fehler werden gemeldet.
+Der freigegebene Plan sieht verschlüsselte Restic-Sicherungen in Backblaze B2 EU Central vor. Bei erfolgreichen täglichen Sicherungen liegt der mögliche Datenverlust bei ungefähr einem Tag; ausbleibende Sicherungen vergrößern dieses Fenster. Wiederherstellungsschlüssel müssen unabhängig vom VPS verwahrt werden; das ist vor Live-Nutzung noch praktisch zu prüfen. Restore ist initial und danach vierteljährlich manuell vorgesehen. Der lokale Restore wurde synthetisch geprüft; Zielhost und vollständige Live-Wiederherstellung bleiben offen.
 
 ## Logging und Benachrichtigungen
 
-| Bereich | Inhalt | Vorgeschlagene Aufbewahrung |
-| --- | --- | --- |
-| Anwendung | Fehler, Request-ID, Status, Dauer, Import- und Jobergebnisse | 14 Tage |
-| Sicherheit | Authentifizierung, Zugriffsverweigerung, Rechteänderungen | 30 Tage |
-| Betrieb | Administration, Dienste, Updates, Deployments, Backup-Ergebnisse | 30 Tage |
-| Sammlung | Benutzer, Aktion, betroffene Bestände und Standorte | Dauerhaft |
+Technische Anwendungs-, Sicherheits- und Betriebslogs werden lokal über journald begrenzt und täglich verschlüsselt extern archiviert. Konkrete Zeit-/Größenlimits stehen in [E06](entscheidungen.md#e06--sicherung-und-betriebsprüfung), die Einrichtung in [Betrieb](betrieb.md). Der dauerhafte fachliche Sammlungsverlauf ist davon getrennt und gehört zu den noch geplanten Bestandstransaktionen.
 
-Anwendung schreibt strukturierte JSON-Logs, beispielsweise mit Pino, nach stdout/stderr. Docker rotiert Containerlogs; journald verwaltet Systemereignisse. Zeitpunkte werden intern in UTC gespeichert und deutsch mit lokaler Zeit angezeigt. Request-IDs erlauben die Zuordnung sichtbarer Fehler zu Serverlogs.
+Die Anwendung schreibt mit ihrem vorhandenen Logger strukturierte JSON-Ereignisse nach stdout/stderr; eine zusätzliche Pino-Abhängigkeit ist nicht eingeführt. Die produktive Ansible-Compose-Vorlage verwendet den journald-Treiber, der Host übernimmt die Begrenzung. Zeitpunkte werden intern in UTC gespeichert und deutsch mit lokaler Zeit angezeigt. Request-IDs verbinden sichtbare Fehler mit technischen Logs.
 
 Keine Passwörter, Tokens, Cookies, vollständigen CSV-Dateien oder ungefilterten Anfrageinhalte im Log. Technische Logs erhalten Größenlimits und zeitliche Bereinigung; bei Erreichen des Größenlimits kann die tatsächlich verfügbare Historie kürzer sein. Kritische Sammlungsänderung und Verlaufseintrag werden in derselben Datenbanktransaktion gespeichert.
 
 Sicherheits- und Betriebslogs werden regelmäßig verschlüsselt außerhalb des Servers gesichert. Dies ist keine manipulationssichere Echtzeitarchivierung. Umfang und Verfügbarkeit zentraler Tailscale-Auditlogs werden im gewählten Tarif geprüft; lokale Dienstlogs ersetzen diese nicht.
 
-Gezielte Meldungen für fehlgeschlagene Backups, anhaltenden Anwendungsausfall und knappen Speicher. Kanal und externer Ausfallprüfer sind noch auszuwählen. Ein Prozess auf dem ausgefallenen VPS kann dessen Totalausfall nicht zuverlässig melden. Kein ELK-, SIEM- oder eigener Grafana-Stack in der ersten Version.
+Gezielte Meldungen für fehlgeschlagene Backups, anhaltenden Anwendungsausfall und knappen Speicher. Healthchecks.io mit E-Mail an Rico ist als Planungsgrundlage festgelegt; Kontoeinrichtung und Live-Zustellung sind offen. Ein Prozess auf dem ausgefallenen VPS kann dessen Totalausfall nicht zuverlässig melden. Kein ELK-, SIEM- oder eigener Grafana-Stack in der ersten Version.
 
 ## Nicht im ersten Umfang
 
 Native Apps, Offline-Schreibzugriffe, öffentliches Teilen, weitere Benutzer, Online-Drafts, automatische Duellregeln, anspruchsvolle Draft-KI, Kartenscanner, Collectr-Synchronisierung und universelle Formatvalidierung. Diese Grenzen ändern nicht die vorgesehenen Kernfunktionen für Sammlung, Decks, Cubes und manuelles Testen.
 
-## Quellen für offene Integrationen
+## Quellen und offene Integrationen
 
 - [YGOPRODeck API](https://ygoprodeck.com/api-guide/): Kandidat für Kartendaten, Namen, Bilder und grobe Preise; vollständige Variantenabdeckung noch zu prüfen.
 - [Collectr Exporthilfe](https://getcollectr.notion.site/Import-Export-Your-Collection-9aa6e5f4d0cd4efb995dadc992760c8e): Exportweg; keine vollständige garantierte CSV-Spezifikation.

@@ -1,5 +1,7 @@
 # P0-06 – Sicherung und Betriebsprüfung
 
+> Recherche-/Evidenzdokument mit dem unten genannten Abrufstand. Aktuelle Freigaben: [Entscheidungsregister](../entscheidungen.md) und [Aufgabenindex](../aufgaben/README.md). Aktuelle Anleitungen: [Entwicklung](../entwicklung.md) und [Betrieb](../betrieb.md). Einordnung: [Rechercheübersicht](README.md).
+
 **Recherche: 2026-10-21; E06 am 2026-10-27 als Planungsgrundlage freigegeben. Keine Jobs, Konten oder Server eingerichtet.**
 
 ## Betriebsvertrag

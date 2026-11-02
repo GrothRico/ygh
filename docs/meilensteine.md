@@ -1,24 +1,23 @@
 # Meilensteine und Abnahme
 
-Die Umsetzung erfolgt in vertikalen Schritten: Jeder Schritt liefert einen nachvollziehbaren, benutzbaren Teil. Sicherheitsgrundlagen und Backups werden vor der produktiven Sammlungserfassung eingerichtet. Es gibt noch keine belastbare Zeitschätzung; besonders Katalogabdeckung und Collectr-Migration müssen zuerst untersucht werden.
+Diese Datei beschreibt Ziel und Abnahmekriterien der größeren Arbeitsbereiche, keine laufende Statusliste. Aktueller Arbeitsstand, Pause und Einzelaufträge stehen ausschließlich im [Aufgabenindex](aufgaben/README.md). Sicherheitsgrundlagen und Backups sind vor produktiver Sammlungserfassung praktisch abzunehmen.
 
 Für die Ausführung durch ein günstiges Modell gelten die kleineren [Arbeitspakete](aufgaben/README.md). Ein ganzer Meilenstein wird nicht auf einmal beauftragt. Vorbereitung, Implementierung und produktive Ausführung sind getrennte Aufträge. Der [Arbeitsablauf](arbeit-mit-llm.md) beschreibt Reviews und Freigaben.
 
 ## M0 Datenquellen und Betrieb prüfen
 
-**Ergebnis:** Dokumentierte technische Entscheidungen. Ein tatsächlicher Infrastrukturversuch erfolgt erst mit P1-14 nach ausdrücklichem Betriebsauftrag, ohne private Sammlungsdaten.
+**Ergebnis:** Dokumentierte technische Entscheidungen zu Datenquellen, privatem Zugriff, Entwicklung und Betrieb. Aktuelle Beschlüsse stehen im [Entscheidungsregister](entscheidungen.md), datierte Belege unter [Untersuchungen](untersuchungen/README.md). Ein Infrastrukturversuch gehört zu P1-14 und braucht einen ausdrücklichen Betriebsauftrag.
 
-- Yu-Gi-Oh!-Katalog an repräsentativen Fällen prüfen: deutsche/englische Drucke, 1st/Unlimited, mehrere Seltenheiten, mehrere Artworks, ältere Sets.
-- Geeignete Quellen für Varianten und Sprachzuordnung auswählen. Fehlende Daten müssen sichtbar bleiben können.
-- Collectr-Adapter anhand öffentlich belegter Felder definieren; synthetische Testdateien ausdrücklich als synthetisch kennzeichnen.
-- VPS und externen Backupspeicher inklusive Steuern gegen das Ziel von ungefähr 5 € pro Monat prüfen. Keine kostenpflichtigen Ressourcen ohne konkrete Kostenentscheidung bestellen.
-- Tailscale, HTTPS, Authentifizierungsbibliothek und Identitätszuordnung festlegen. Zentral verfügbare Auditereignisse im tatsächlichen Tarif prüfen.
-- Entscheiden, ob Caddy benötigt wird oder Tailscale Serve den privaten HTTPS-Zugang bereits ausreichend abdeckt.
-- Benachrichtigungskanal und unabhängige Ausfallprüfung auswählen.
+- Katalogfälle und Grenzen der Varianten-/Sprachzuordnung belegen; fehlende Daten müssen sichtbar bleiben.
+- Collectr-Vertrag anhand belegter Felder beschreiben, synthetische Beispiele klar markieren; echte Exportprüfung vor Migration.
+- Hosting-/Backupkosten mit offenem Budgetvergleich dokumentieren und vor Bestellung erneut prüfen.
+- Zugriffs-, HTTPS-, Identitäts-, Backup- und Alarmvertrag mit Grenzen festlegen; konkrete Live-Nachweise separat führen.
 
 **Abnahme:** Kostenübersicht mit offenen Posten; nachvollziehbare Variantenbeispiele; dokumentierte Importgrenzen; Zugriffskonzept ohne öffentlichen Bypass. Fehlende vollständige Katalogdaten blockieren keine reine Bestandsverwaltung, müssen aber eine bestätigte Vollständigkeitsquote verhindern.
 
 ## M1 Projektgrundlage und sicherer Betrieb
+
+Lokale Grundlage und Betriebsvorbereitung wurden mit P1-Paketen umgesetzt. Der Abschnitt bewahrt die fachlichen Ziel- und Abnahmekriterien; aktuelle Paketstände und Live-Gates stehen im [Aufgabenindex](aufgaben/README.md).
 
 **Ergebnis:** Kleine deutsche Anwendung mit Anmeldung und reproduzierbarem Deployment.
 
@@ -110,14 +109,14 @@ Gezielte Unit- und Integrationstests für Mengenerhaltung, Transaktionen, Sammlu
 
 Keine Tests, die nur die Implementierung nachschreiben. Keine umfangreichen Lasttests für unrealistische Nutzerzahlen. Ein repräsentativer 15.000-Karten-Datensatz prüft die tatsächlichen Ansichten und Suchabläufe.
 
-## Noch offene Entscheidungen
+## Noch offene Produkt- und Integrationsfragen
 
 | Punkt | Wann klären | Zuständigkeit |
 | --- | --- | --- |
-| VPS, Backupziel und tatsächliche Gesamtkosten | M0, vor Bestellung | Technischer Vorschlag, Kostenentscheidung durch Benutzer |
-| Katalog und genaue Variantenabdeckung | M0 | Technische Untersuchung |
-| Authentifizierung und privates HTTPS | M0 | Technischer Vorschlag mit geprüftem Zugriffsweg |
-| Alarmkanal und externe Erreichbarkeitsprüfung | M0/M1 | Technischer Vorschlag, Zieladresse vom Benutzer |
+| Tatsächliche Gesamtkosten und Verfügbarkeit des VPS | Vor einer Bestellung | Benutzer prüft den historischen Planwert erneut; keine Bestellung beauftragt |
+| Verbleibende Katalog-/Variantenlücken der gewählten Quelle | Bei P2-01/P2-02 und Setquoten | Belegte Zuordnungen übernehmen; offene Daten sichtbar lassen |
+| Live-Prüfung der Authentifizierung und des privaten HTTPS | P1-14, mit Betriebsauftrag | Praktische Prüfung am freigegebenen Zielsystem |
+| Externe Alarmzustellung und unabhängige Recoverykopie | P1-14, mit Betriebsauftrag | Praktische Betriebsprüfung; Live-Gates offen |
 | Reale Collectr-Kodierung | Sobald Export verfügbar, vor Migration | Technische Validierung |
 | Konkrete Grid-Draft-Regeln und Default-Packzahlen | Vor M5 | Einfachen Vorschlag anhand Zweispielernutzung festlegen |
 | Cardmarket-Matching | M7 | Technische Untersuchung; Funktion optional |

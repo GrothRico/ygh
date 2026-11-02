@@ -12,7 +12,8 @@
     "test": "vitest run",
     "build": "next build",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "catalog:sync": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/catalog-sync.mts"
   },
   "dependencies": {
     "better-sqlite3": "13.0.3",

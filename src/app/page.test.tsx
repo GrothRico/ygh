@@ -13,7 +13,7 @@ describe("Startseite nach erfolgreicher Prüfung", () => {
   beforeEach(() => requireReadAccess.mockReset());
 
   it("rendert den deutschen privaten Einstieg", async () => {
-    requireReadAccess.mockResolvedValue({ id: "synthetic-user", role: "user" });
+    requireReadAccess.mockResolvedValue({ id: "synthetic-user", role: "user", authMode: "tailscale" });
     const markup = renderToStaticMarkup(await HomePage());
 
     expect(markup).toContain("Deine Yu-Gi-Oh!-Sammlung");
@@ -27,5 +27,20 @@ describe("Startseite nach erfolgreicher Prüfung", () => {
     expect(markup).not.toContain("Cubes");
     expect(markup).not.toContain("Request-ID:");
     expect(requireReadAccess).toHaveBeenCalledOnce();
+  });
+
+  it("kennzeichnet lokalen Testzugang dauerhaft mit Testbenutzer und Rolle", async () => {
+    requireReadAccess.mockResolvedValue({
+      id: "synthetic-admin",
+      displayName: "Lokaler Test-Admin",
+      role: "admin",
+      authMode: "local",
+    });
+    const markup = renderToStaticMarkup(await HomePage());
+
+    expect(markup).toContain('role="status"');
+    expect(markup).toContain("Lokale Entwicklung · Lokaler Test-Admin (Admin) · nur synthetische Daten");
+    expect(markup).toContain("Lokaler Entwicklungszugang auf diesem Rechner.");
+    expect(markup).not.toContain("Tailscale-Verbindung");
   });
 });

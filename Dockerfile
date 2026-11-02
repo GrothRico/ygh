@@ -30,6 +30,8 @@ COPY --from=dependencies --chown=node:node /app/node_modules/drizzle-orm ./node_
 COPY --from=builder --chown=node:node /app/src/server/db/migrations ./src/server/db/migrations
 COPY --chown=node:node scripts/deploy-database.ts ./scripts/deploy-database.ts
 COPY --chown=node:node scripts/backup-snapshot.ts ./scripts/backup-snapshot.ts
+COPY --chown=node:node scripts/catalog-sync.mts ./scripts/catalog-sync.mts
+COPY --from=builder --chown=node:node /app/src/server/catalog/ygoprodeck-sync.ts ./src/server/catalog/ygoprodeck-sync.ts
 
 USER node
 EXPOSE 3000
