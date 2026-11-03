@@ -102,7 +102,7 @@ function configuredOrigin(): URL {
     try {
       const configuration = readAuthConfiguration(process.env);
       if (configuration.localDevUser === null) throw new Error("Local mode is unavailable.");
-      return new URL("http://127.0.0.1:3001");
+      return new URL("http://127.0.0.1:13001");
     } catch {
       throw new AccessError(503, "Zugriff ist derzeit nicht verfügbar.", "configuration");
     }

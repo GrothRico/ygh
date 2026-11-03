@@ -26,8 +26,9 @@ Lies zuerst `docs/arbeit-mit-llm.md`, bei Dokumentationsänderungen auch `docs/d
 
 ## Integrität und Sicherheit
 
+- Standorte sind frei benannte, verschachtelbare Ordner ohne Typ- oder Benutzerzuordnung. Der Standardordner für ungeklärte Eingänge wird automatisch angelegt. Auswertungen beziehen sich auf den gewählten Ordner samt Unterordnern oder den Gesamtbestand.
 - Physischer Bestand hat genau einen Standort. Teilmengenänderungen und fachlicher Verlauf sind atomar. Mengen nie negativ; Rezeptänderungen bewegen keinen Bestand.
-- Deckkarten zählen zur Sammlung des Deckbesitzers; andere Karten einschließlich Cubes nach aktuellem Standort. Zusammen keine Doppelzählung.
+- Alle physischen Karten zählen nach aktuellem Standort zum gewählten Ordnerbereich; die gemeinsame Sammlung zählt jeden Bestand einmal. Decks und Cubes sind ausschließlich nichtphysische Rezepte ohne Standort, Besitzerregel oder Bestandsbindung. Verfügbarkeit wird je gewähltem Standort abgeleitet; zusammen keine Doppelzählung.
 - Keine öffentliche Registrierung und keine produktiven Auth-Bypässe. Jede geschützte Serverfunktion prüft Identität und Berechtigung.
 - Keine Geheimnisse, Cookies, Tokens oder vollständigen Importdaten in Logs, Git oder Übergaben. Kein Zugriff auf echte Daten für gewöhnliche Tests.
 - Keine Bestellung, produktive Ausführung von Ansible, Migration echter Daten oder Veröffentlichung allein aufgrund eines Implementierungspakets. Dafür braucht es einen ausdrücklichen Betriebsauftrag mit Zielsystem.

@@ -1,6 +1,6 @@
 # Projektspezifikation
 
-Fachliche Grundlage, Stand 21. Oktober 2026; aktueller Projektstand ergänzt am 2. November 2026. Die fachlichen Regeln bleiben maßgeblich. Dieses Dokument beschreibt das Zielprodukt, nicht den vollständigen Ist-Stand; Karten-, Deck- und Cube-Funktionen sind noch nicht implementiert. Technische Beschlüsse und deren Umsetzungsstand stehen im [Entscheidungsregister](entscheidungen.md), Paketstatus im [Aufgabenindex](aufgaben/README.md). Produktname bleibt offen; Hosting ist mit Hetzner CX23 als Planungsgrundlage entschieden, aber noch nicht bestellt.
+Fachliche Grundlage mit Definitionsänderung vom 3. November 2026 (Decks und Cubes als nichtphysische Rezepte). Die fachlichen Regeln bleiben maßgeblich. Dieses Dokument beschreibt das Zielprodukt, nicht den vollständigen Ist-Stand; Katalog, Suche, Standortverwaltung und Bestandserfassung sind vorhanden; Deck- und Cube-Funktionen bleiben geplant. Technische Beschlüsse und deren Umsetzungsstand stehen im [Entscheidungsregister](entscheidungen.md), Paketstatus im [Aufgabenindex](aufgaben/README.md). Produktname bleibt offen; Hosting ist mit Hetzner CX23 als Planungsgrundlage entschieden, aber noch nicht bestellt.
 
 ## Ziel und Leitlinien
 
@@ -14,23 +14,19 @@ Verständlichkeit, Portabilität und selbstständiges Debuggen sind Architekturz
 
 Jedes physische Exemplar ist genau einmal im Bestand vorhanden und hat genau einen aktuellen Standort. Identische Exemplare derselben Sprache und Variante am selben Ort werden als Bestand mit Stückzahl gespeichert. Eine Teilmenge kann verschoben werden.
 
-Standorte bestehen aus der Person, bei der sich Karten befinden, und optionalen Behältern. Beispiele: „Bei Rico → Blaue Box → Fach Staples“, „Beim Bruder → Binder“, „Bei Rico → Deck Drachen“.
+Standorte sind frei benannte, verschachtelbare Ordner. Namen allein identifizieren sie für die Benutzer, etwa „Rico → Regal → Fach 2 → Blaue Box → Abteil A“. Es gibt keine Typauswahl, keine eigenen Typdefinitionen und keine feste Zuordnung von Ordnern zu Anwendungsbenutzern. Jeder normale Ordner kann Karten und weitere Ordner enthalten, auch auf oberster Ebene. Die beiden Benutzer dürfen alles bearbeiten.
 
-Boxen, Binder und Fächer können verschachtelt werden. Decks und Cubes enthalten Karten, aber keine weiteren Behälter. Ein Behälterwechsel bewegt seine Inhalte mit; die Karten müssen nicht einzeln umgebucht werden. Virtuelle Tags ändern keinen Standort.
+Ein Standardordner für ungeklärte Eingänge wird automatisch angelegt; weitere Startstandorte werden nicht vorgegeben oder manuell initialisiert. Dieser Standardordner darf umbenannt, aber nicht gelöscht oder verschoben werden. Normale Ordner dürfen einschließlich ihres Inhalts umbenannt und verschoben werden. Löschen ist nach Bestätigung nur erlaubt, wenn sie weder Karten noch Unterordner enthalten. Verschieben eines Ordners ändert den Standortbereich seiner Inhalte gemeinsam. Decks, Cubes und virtuelle Tags sind keine physischen Standorte; eine Deckbox kann einen normalen Ordner erhalten.
 
-### Persönliche Sammlung und Ausleihe
+### Sammlungsbereiche
 
-| Karten befinden sich in | Zuordnung für persönliche Set-Vervollständigung | Physische Verfügbarkeit |
-| --- | --- | --- |
-| Box, Binder, Fach oder unsortiert | Aktueller Standort bei einer Person | Aktueller Standort und Reservierung |
-| Physischem Deck | Besitzer des Decks | Tatsächlicher Standort des Decks |
-| Physischem Cube | Aktueller Standort bei einer Person | Tatsächlicher Standort des Cubes |
+Auswertungen einschließlich Set-Vervollständigung beziehen sich auf den Gesamtbestand oder einen ausdrücklich gewählten Ordner samt Unterordnern. Die Namen „Rico“ und „Remo“ können solche Bereiche bezeichnen, haben aber keine technische Personenrolle. Die frühere automatische persönliche Sammlung aus Benutzerwurzeln entfällt nach D11. Die gemeinsame Sammlung zählt jeden Bestand genau einmal; Rezepte ändern keine Zuordnung.
 
-Nur physische Decks haben einen Besitzer. Dieser entscheidet nicht über Bearbeitungsrechte. Beide Benutzer dürfen alles bearbeiten. Beim Verleihen bleiben Deckbesitzer und Sammlungszuordnung bestehen; der aktuelle Standort wechselt. Ausleihe erfasst Herkunft, Entleiher, Beginn, optionales Rückgabedatum und Notiz. Rückgabe beendet die Ausleihe.
+### Gemeinsame Bestands- und Ordneransicht
 
-Verlässt eine Karte ein Deck dauerhaft, gilt die Regel ihres neuen Standorts. Beispiel: Ein ausgeliehenes Deck gehört dem Bruder und liegt bei Rico. Seine Karten zählen für die persönliche Set-Vervollständigung des Bruders. Eine daraus in Ricos Box verschobene Karte zählt anschließend bei Rico. Die gemeinsame Sammlung enthält sie stets nur einmal.
+„Bestand“ bündelt Kartenübersicht und Ordnerverwaltung. Auf Desktop steht links ein kompakter, auf- und zuklappbarer Ordnerbaum; mittig erscheinen direkte Unterordner und die Karten des gewählten Bereichs einschließlich seiner Unterordner. Auf Mobilgeräten entfällt die Seitenleiste; rahmenlose Ordner mit Symbol und Name, ein größerer klickbarer Pfad und ein Zurück-Pfeil zum übergeordneten Ordner bleiben für die Navigation erhalten. Ein zusätzlicher Standortfilter oder eine separate Standortverwaltungsseite ist nicht nötig.
 
-Die Oberfläche unterscheidet ausdrücklich „Meine Sammlung“, „Physisch bei mir“ und „Gemeinsam“. Ungeklärte Importstandorte werden als ungeklärt angezeigt und keiner Person zugerechnet.
+Ordner werden ohne umrahmte Kacheln dargestellt. Ein kompakter Ordner-plus-Button öffnet am aktuellen Ort oder auf oberster Ebene einen Anlegen-Dialog mit Name und Speichern. Der größere Navigationspfad ersetzt den separaten Hinweis zum aktuellen Ordner; einzelne Pfadteile werden bei Hover/Tastaturfokus blau und unterstrichen. Der Zurück-Pfeil führt zum Parent statt zur Browserhistorie. Ein Drei-Punkte-Menü wird auf Desktop beim Hover über den Ordner sowie bei Tastaturfokus sichtbar, auf Mobilgeräten dauerhaft. Ein Klick außerhalb oder Escape schließt das Kontextmenü. Umbenennen, Löschen und Bewegen öffnen jeweils einen Dialog. Löschen verlangt eine ausdrückliche Bestätigung und prüft beim Speichern erneut auf Leere. Umbenennen bietet Name und Speichern. Bewegen zeigt einen klappbaren Zielbaum mit sichtbarem Zielpfad; eigener Ordner und Unterordner sind ungültige Ziele, die oberste Ebene ist auswählbar. Abbrechen/Escape schließen den Dialog, Eingaben bleiben bei Fehlern erhalten. Eigene Ordnerbilder bleiben eine spätere Option ohne aktuellen Uploadauftrag.
 
 ## Karten und Varianten
 
@@ -40,25 +36,25 @@ Die Sprache gehört zum physischen Bestand. Beispielanzeige: „2 Exemplare · 1
 
 Erfassung ist sowohl über unscharfe Namenssuche mit anschließender Druckauswahl als auch über vollständigen oder teilweisen Set-Code mit anschließender Kartenauswahl möglich. Exakte Codes werden bevorzugt. Mehrdeutige Treffer werden nicht automatisch geraten. Menge, Standort, Sprache und Edition können bei der Erfassung vorbelegt und vor dem Speichern geändert werden.
 
-Fehlt eine eindeutige Editionsangabe in der Datenquelle, wird sie einfach am Bestand manuell erfasst: „Unbekannt“, „1st Edition“ oder „Unlimited“; „Nicht anwendbar“ bleibt für entsprechende Drucke möglich. Ohne Auswahl bleibt die Edition unbekannt, nicht automatisch Unlimited. Die Angabe kann später korrigiert werden und wird durch Katalogupdates nicht überschrieben. Unterschiedliche Editionen werden als getrennte Teilmengen geführt. Das ist auch ohne vollständig aufgelöste Katalogvariante möglich; eine manuelle Editionsangabe allein bestätigt noch kein vollständiges Sammelziel. Fehlende API-Editionsdaten blockieren somit nicht die Bestandserfassung.
+Fehlt eine eindeutige Editionsangabe in der Datenquelle, wird sie einfach am Bestand manuell erfasst: „Unbekannt“, „1st Edition“, „Unlimited“ oder „Limited Edition“; „Nicht anwendbar“ bleibt für entsprechende Drucke möglich. Ohne Auswahl bleibt die Edition unbekannt, nicht automatisch Unlimited. Die Angabe kann später korrigiert werden und wird durch Katalogupdates nicht überschrieben. Unterschiedliche Editionen werden als getrennte Teilmengen geführt. Das ist auch ohne vollständig aufgelöste Katalogvariante möglich; eine manuelle Editionsangabe allein bestätigt noch kein vollständiges Sammelziel. Fehlende API-Editionsdaten blockieren somit nicht die Bestandserfassung.
 
-Jede Sammlung und jeder Behälter zeigt Kartenbilder und Mengen. Eine kompakte Listenansicht ergänzt die Bildansicht. Kartendetails zeigen die Verteilung über alle Standorte. Große Listen werden portionsweise geladen.
+Jede Sammlung und jeder Behälter zeigt Kartenbilder und Mengen. Suche und Bestandsübersicht starten kompakt. Ein Detailschalter öffnet oder schließt alle Karten derselben Ansicht gemeinsam; Eingaben bleiben dabei erhalten. Die gemeinsame Bestands- und Ordneransicht navigiert über frei benannte Ordner und zeigt die Karten des gesamten ausgewählten Teilbaums. Kartendetails zeigen die Verteilung über alle Standorte. Große Listen werden portionsweise geladen.
 
 ## Set-Vervollständigung
 
 Pro Set werden alle gültigen Sammelvarianten berücksichtigt, einschließlich unterschiedlicher Editionen, Seltenheiten und Artworks. Deutsch oder Englisch erfüllt dasselbe Sammelziel. Mehrere Exemplare erhöhen die Menge, aber nicht die Anzahl erfüllter Varianten.
 
-Ansichten: persönliche Sammlung je Benutzer und gemeinsame Sammlung. Vorhandene und fehlende Varianten werden mit Bildern dargestellt. Die gemeinsame Quote wird aus den gemeinsam erfüllten Zielen berechnet, nicht aus der Summe der persönlichen Quoten. Karten aus einem anderen Set erfüllen das Ziel nicht.
+Ansichten: gewählter Ordnerbereich einschließlich Unterordnern und gemeinsame Sammlung. Vorhandene und fehlende Varianten werden mit Bildern dargestellt. Die gemeinsame Quote wird aus den gemeinsam erfüllten Zielen berechnet, nicht aus der Summe von Ordnerquoten. Karten aus einem anderen Set erfüllen das Ziel nicht.
 
 Unaufgelöste Bestände erfüllen keine konkrete Variante. Falls der Katalog eines Sets nicht vollständig geprüft ist, wird die Quote als vorläufig gekennzeichnet. Null bekannte Ziele ergeben keine fiktiven 100 Prozent.
 
 ## Collectr-Migration
 
-Der Import verarbeitet Collectr-CSV direkt. Portfolios werden in der Vorschau auf Personen und gegebenenfalls Behälter abgebildet. Der Import ist zunächst eine einmalige Übernahme, keine bidirektionale Synchronisierung.
+Der Import verarbeitet Collectr-CSV direkt. Portfolios werden in der Vorschau auf frei gewählte Standortordner abgebildet. Der Import ist zunächst eine einmalige Übernahme, keine bidirektionale Synchronisierung.
 
 Die öffentlich dokumentierten Fremdimporter nennen unter anderem `Portfolio Name`, `Category`, `Product Name`, `Set`, `Card Number`, `Variance`, `Rarity`, `Quantity`, `Card Condition`, `Grade`, `Average Cost Paid`, `Price Override`, `Watchlist`, `Date Added` und einen datierten Marktpreis. Dies ist eine vorläufige Adaptergrundlage, keine garantierte offizielle Collectr-Schnittstelle.
 
-Spalten werden anhand ihrer Namen erkannt; Reihenfolge und zusätzliche Spalten dürfen variieren. Die tatsächliche Kodierung von Yu-Gi-Oh!-Editionen, Sprache und Artwork ist weiterhin ungeprüft, da kein echter Collectr-Export vorliegt. Kartennamen auf Englisch beweisen keine englische Kartensprache. Fehlende Angaben bleiben unbekannt.
+Spalten werden anhand ihrer Namen erkannt; Reihenfolge und zusätzliche Spalten dürfen variieren. Der am 3. November 2026 analysierte echte Export belegt 16 Spalten einschließlich `Notes`, explizite Watchlist-Werte und Editionsangaben in `Variance`, aber kein Sprach-/Artworkfeld. [Analyse und nächste Schritte](untersuchungen/collectr-export-2026-11-03.md). Limited Edition ist als Modellerweiterung beschlossen, noch nicht implementiert. Vollständige Deck-/Boxprodukte werden separat ausgewiesen, nicht als einzelne Karten importiert. Kartennamen und Codes beweisen keine Sprache des physischen Bestands. Fehlende Angaben bleiben unbekannt.
 
 Ablauf: Datei prüfen → Vorschau → Portfolios zuordnen → eindeutige Treffer und ungeklärte Zeilen zeigen → Übernahme bestätigen → Mengenbericht je Portfolio. Originaldatei und Originalzeilen bleiben erhalten. Watchlist-Zeilen werden nicht als physischer Bestand gezählt. Nicht importierte Zeilen werden mit Grund ausgewiesen.
 
@@ -66,19 +62,17 @@ Ungeklärte Zeilen dürfen als ungeklärter Bestand übernommen werden. Ist die 
 
 ## Deckbau und Bannlisten
 
-Eine Deckliste ist ein Rezept; ein physisches Deck ist eine Zusammenstellung konkreter Bestandsmengen. Entwürfe dürfen beliebige Karten enthalten und dieselben Karten wie andere Entwürfe verwenden. Ein physisches Exemplar kann nur einem physischen Behälter zugeordnet sein.
+Ein Deck ist ausschließlich eine nichtphysische Kartenliste (Rezept), ohne eigenen Standort oder Bestandsbindung. Entwürfe dürfen beliebige Karten enthalten und dieselben Karten wie andere Entwürfe verwenden. Erstellen, Kopieren, Bearbeiten und Löschen eines Rezepts verändern niemals den physischen Bestand.
 
 Editor mit Main, Extra und Side, Kartensuche und Filtern, Bildern, Mengensteuerung, Kopieren, einfachen gespeicherten Versionen und Import/Export. Desktop-Bedienung orientiert sich an Dueling Nexus und YGO Omega; auf Smartphones gibt es Tap-Aktionen statt einer Pflicht zu Drag-and-drop.
 
-Pro Karte werden benötigte, vorhandene, freie und fehlende Mengen sowie ihre Standorte angezeigt. Karten in anderen Decks oder Cubes gelten standardmäßig als belegt, bleiben aber als mögliche Transfers sichtbar. „Vorhanden“ bedeutet nicht „sofort hier verfügbar“.
-
-Beim Zusammenstellen entsteht eine Pickliste nach Standort. Rezeptänderungen erzeugen einen Änderungsvorschlag; sie bewegen keine physischen Karten, bevor der Benutzer die tatsächliche Umbuchung bestätigt.
+Im Deckkontext gibt es immer eine Verfügbarkeitsansicht für einen wählbaren Standort einschließlich seiner Unterstandorte. Pro Kartenidentität zeigt sie benötigte, dort vorhandene und fehlende Mengen sowie, ob die gesamte Liste dort vorhanden ist. Main, Extra und Side werden gemeinsam gezählt; dieselbe physische Kopie deckt nicht mehrere benötigte Einträge innerhalb einer Liste. Deutsch und Englisch sowie unterschiedliche Drucke erfüllen grundsätzlich dieselbe Kartenidentität; optionale Druckpräferenzen bleiben sichtbar. Bestände an anderen Standorten können zusätzlich als Bezugsquellen angezeigt werden, erfüllen aber keine lokale Fehlmenge. Andere Deck- oder Cube-Rezepte reservieren nichts und reduzieren die verfügbare Menge nicht. Vollständig bedeutet deshalb ausreichend Karten am gewählten Standort, keine feste Zusammenstellung oder Zusage für mehrere Listen gleichzeitig.
 
 Erste unterstützte Modi: aktuelles TCG und freier/custom Deckbau. Langfristig sollen weitere Formate möglich sein, aber „unterstützt“ unterscheidet sich von vollständig geprüfter Legalität. Eigene Bannlisten sind benannte, versionierte Listen mit erlaubter Stückzahl je Kartenidentität. Limits gelten über Main, Extra und Side gemeinsam. Regeln liegen in überschaubaren TypeScript-Funktionen, nicht in einer frei programmierbaren Regelmaschine. Historische Formate benötigen passende Kartenpools und Regeln und werden später separat umgesetzt.
 
 ## Cubes und Drafting
 
-Cube-Liste, physischer Cube und Draft-Sitzung sind getrennte Konzepte. Der Editor unterstützt Karten, Stückzahlen, Kategorien, verfügbare und fehlende Mengen sowie gespeicherte Versionen. Ein physischer Cube bindet Bestand wie ein Deck, hat aber keinen Besitzer für Sammlungszwecke: Entscheidend ist der Standort.
+Ein Cube ist wie ein Deck ausschließlich ein nichtphysisches Rezept ohne Standort, Besitzerregel oder Bestandsbindung. Der Editor unterstützt Karten, Stückzahlen, Kategorien und gespeicherte Versionen. Im Cube-Kontext gibt es dieselbe standortbezogene Verfügbarkeitsansicht mit benötigten, vorhandenen und fehlenden Mengen sowie Vollständigkeit wie bei Decks; normale und Extra-Deck-Pools werden gemeinsam abgeglichen. Cube-Rezept und Draft-Sitzung bleiben getrennte Konzepte.
 
 Lokale Drafts sind ausreichend. Schwerpunkt ist zwei Spieler; gemeinsame Online-Drafts sind nicht Bestandteil der ersten Umsetzung. Alle Plätze können manuell bedient werden. Alternativ übernimmt ein einfacher simulierter Picker freie Plätze. Er testet Abläufe und ist keine kompetente Spiel-KI.
 
@@ -94,7 +88,7 @@ Ein Draft verwendet eine unveränderliche Kopie der Cube-Liste und Einstellungen
 
 Testfunktionen: Packs ansehen, Plätze wechseln, Picks protokollieren, einen Testschritt zurücknehmen und neu starten. Bei zwei Menschen am selben Gerät blendet eine Übergabeansicht verdeckte Informationen aus. Die daraus gebauten Decks dürfen nur Karten aus dem erhaltenen Pool enthalten; Main-/Extra-/Side-Vorgaben sind für Cube-Decks einstellbar.
 
-Virtuelle Drafts verändern keine Bestände. Eine Inventarverwaltung für tatsächlich an Spieler verteilte Cube-Karten ist eine spätere Erweiterung, nicht Voraussetzung des Simulators.
+Drafts verändern keine Bestände. Physisch verteilte Karten werden bei Bedarf über die normale Standortverwaltung geführt; ein Draft erzeugt keine zweite Inventarzuordnung.
 
 ## Manuelles Testfeld
 

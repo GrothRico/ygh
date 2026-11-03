@@ -5,7 +5,7 @@ Diese Dateien enthalten datierte Recherche und teilweise damalige Umsetzungshinw
 | Untersuchung | Zweck und verbleibende Grenze |
 | --- | --- |
 | [Katalog](katalog.md), [Katalogreview](katalog-review.md) | Quellenwahl und Variantenabdeckung; kein Vollständigkeitsnachweis. |
-| [Collectr](collectr.md) | Vorläufige Exportprofile aus Fremdbelegen; echter Export und Freigabe fehlen. |
+| [Collectr-Recherche](collectr.md), [Echtdateianalyse vom 3. November](collectr-export-2026-11-03.md) | Beobachtetes Exportprofil und Mengenabgleich sind belegt; aktualisierter Vertrag bleibt zur menschlichen Prüfung, kein Import ausgeführt. |
 | [Hosting](hosting.md) | Preisvergleich vom Oktober 2026; vor Bestellung erneut prüfen. |
 | [Zugriff](zugriff.md) | Grundlage für Tailscale Serve und Zwei-Benutzer-Zuordnung; ersetzt keine Liveprüfung. |
 | [Entwicklungsvertrag](entwicklungsvertrag.md) | Historische Werkzeugauswahl einschließlich späterer Oxlint-Korrektur. Aktuelle Befehle: [Entwicklung](../entwicklung.md). |

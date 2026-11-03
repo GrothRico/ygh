@@ -198,7 +198,7 @@ describe("Tailscale-Authentifizierung", () => {
     vi.stubEnv("YGH_LOCAL_DEV_USER", "admin");
     vi.stubEnv("NODE_ENV", "development");
     requestAs("local-member@ygh.invalid", {
-      host: "127.0.0.1:3001",
+      host: "127.0.0.1:13001",
       "x-user-role": "user",
       "x-local-dev-user": "member",
       cookie: "YGH_LOCAL_DEV_USER=member",
@@ -227,7 +227,7 @@ describe("Tailscale-Authentifizierung", () => {
     vi.stubEnv("YGH_LOCAL_DEV_BUILD_ALLOWED", "true");
     vi.stubEnv("YGH_LOCAL_DEV_USER", "admin");
     vi.stubEnv("NODE_ENV", "development");
-    requestAs(null, { host: "localhost:3001" });
+    requestAs(null, { host: "localhost:13001" });
 
     await expect(getCurrentUser()).rejects.toMatchObject({
       statusCode: 403,

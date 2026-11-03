@@ -4,6 +4,8 @@
 
 **P0-02 · Recherche vom 2026-10-21 · Status: Vorschlag für Review**
 
+**Nachtrag vom 3. November 2026:** Inzwischen liegt eine echte Exportdatei vor. Das [separate Analyseprotokoll](collectr-export-2026-11-03.md) enthält beobachtete Header, Mengen, Watchlist-/Editionswerte und nächste Schritte. Die folgenden Aussagen geben den Recherche- und Vorschlagsstand vom 21. Oktober wieder; die damalige Dateilücke ist inzwischen geschlossen.
+
 ## Ergebnis
 
 Collectr dokumentiert offiziell, dass PRO-Mitglieder den Export im Portfolio über das Menü „…“ per E-Mail anfordern können. Die offizielle Hilfe veröffentlicht jedoch weder CSV-Header noch Datentypen oder eine Zusage, dass ein Export alle Portfolios enthält. Ein Sample auf derselben Hilfeseite beschreibt ausdrücklich den umgekehrten Weg: TCGPlayer-CSV in Collectr importieren. Es ist kein Beleg für Collectr-Exportheader.

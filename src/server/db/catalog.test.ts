@@ -175,21 +175,24 @@ describe("SQLite-Katalogmigration", () => {
       expect(
         migrated
           .prepare(
-            "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('cards', 'sets', 'variants', 'printings', 'catalog_source_payloads') ORDER BY name",
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('activity_log', 'cards', 'locations', 'sets', 'stock', 'variants', 'printings', 'catalog_source_payloads') ORDER BY name",
           )
           .all(),
       ).toEqual([
+        { name: "activity_log" },
         { name: "cards" },
         { name: "catalog_source_payloads" },
+        { name: "locations" },
         { name: "printings" },
         { name: "sets" },
+        { name: "stock" },
         { name: "variants" },
       ]);
       expect(
         migrated
           .prepare("SELECT count(*) AS count FROM __drizzle_migrations")
           .get(),
-      ).toEqual({ count: 4 });
+      ).toEqual({ count: 8 });
     } finally {
       migrated.close();
     }

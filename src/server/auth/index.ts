@@ -145,7 +145,7 @@ export async function getCurrentUser(): Promise<AuthenticatedUser> {
 
   try {
     const requestHeaders = await headers();
-    if (configuration.localDevUser !== null && requestHeaders.get("host") !== "127.0.0.1:3001") {
+    if (configuration.localDevUser !== null && requestHeaders.get("host") !== "127.0.0.1:13001") {
       throw new AuthenticationError("Zugriff verweigert.", 403, "unknown_identity");
     }
     connection = openDatabase(configuration.databasePath);

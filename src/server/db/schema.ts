@@ -1,7 +1,9 @@
 import { sql } from "drizzle-orm";
 import {
+  type AnySQLiteColumn,
   check,
   integer,
+  index,
   sqliteTable,
   text,
   uniqueIndex,
@@ -16,6 +18,21 @@ export const users = sqliteTable("users", {
     .default(true),
 }, (table) => [
   check("users_active_boolean", sql`${table.active} IN (0, 1)`),
+]);
+
+export const locations = sqliteTable("locations", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  kind: text("kind").notNull(),
+  parentId: text("parent_id").references((): AnySQLiteColumn => locations.id),
+}, (table) => [
+  check("locations_name_length", sql`length(trim(${table.name})) BETWEEN 1 AND 100`),
+  check("locations_kind_valid", sql`${table.kind} IN ('unknown', 'folder')`),
+  check(
+    "locations_root_identity_valid",
+    sql`(${table.kind} = 'unknown' AND ${table.parentId} IS NULL) OR ${table.kind} = 'folder'`,
+  ),
+  uniqueIndex("locations_unknown_root_unique").on(table.kind).where(sql`${table.kind} = 'unknown'`),
 ]);
 
 export const cards = sqliteTable("cards", {
@@ -175,4 +192,43 @@ export const printings = sqliteTable("printings", {
     table.source,
     table.sourceId,
   ),
+]);
+
+export const stock = sqliteTable("stock", {
+  id: text("id").primaryKey(),
+  cardId: text("card_id").notNull().references(() => cards.id),
+  variantId: text("variant_id").references(() => variants.id),
+  printingId: text("printing_id").references(() => printings.id),
+  sourceObservationId: text("source_observation_id").references(() => sourcePrintingObservations.id),
+  language: text("language").notNull().default("unknown"),
+  edition: text("edition").notNull().default("unknown"),
+  locationId: text("location_id").notNull().references(() => locations.id),
+  quantity: integer("quantity").notNull(),
+  version: integer("version").notNull().default(1),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+}, (table) => [
+  check("stock_language_valid", sql`${table.language} IN ('unknown', 'de', 'en')`),
+  check("stock_edition_valid", sql`${table.edition} IN ('unknown', 'first', 'unlimited', 'not_applicable')`),
+  check("stock_quantity_positive", sql`typeof(${table.quantity}) = 'integer' AND ${table.quantity} > 0 AND ${table.quantity} <= 9007199254740991`),
+  check("stock_version_positive", sql`typeof(${table.version}) = 'integer' AND ${table.version} > 0 AND ${table.version} <= 9007199254740991`),
+  check("stock_print_reference_exclusive", sql`${table.sourceObservationId} IS NULL OR (${table.variantId} IS NULL AND ${table.printingId} IS NULL)`),
+  index("stock_location_idx").on(table.locationId),
+  index("stock_card_idx").on(table.cardId),
+]);
+
+export const activityLog = sqliteTable("activity_log", {
+  id: text("id").primaryKey(),
+  actorId: text("actor_id").notNull().references(() => users.id),
+  action: text("action").notNull(),
+  entityType: text("entity_type").notNull(),
+  entityId: text("entity_id").notNull(),
+  detailsJson: text("details_json").notNull(),
+  requestId: text("request_id").notNull(),
+  createdAt: text("created_at").notNull(),
+}, (table) => [
+  check("activity_log_details_json_valid", sql`json_valid(${table.detailsJson})`),
+  check("activity_log_action_valid", sql`${table.action} IN ('stock.created', 'stock.corrected')`),
+  check("activity_log_entity_type_valid", sql`${table.entityType} = 'stock'`),
+  index("activity_log_entity_idx").on(table.entityType, table.entityId, table.createdAt),
 ]);

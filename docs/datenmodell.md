@@ -1,16 +1,21 @@
 # Datenmodell
 
-Dieses Dokument trennt eingeführtes Schema von weiterem Entwurf. `users`, `cards`, `sets`, `variants`, `printings`, `source_printing_observations`, `catalog_sync_status` und `catalog_source_payloads` sind implementiert; die übrigen Tabellen bleiben Vorschläge für spätere ausdrücklich beauftragte Pakete. Paketstatus stehen im [Aufgabenindex](aufgaben/README.md). Fremdschlüssel, positive Mengen und atomare Bestandsänderungen sind verbindliche fachliche Regeln.
+Dieses Dokument trennt eingeführtes Schema von weiterem Entwurf. `users`, `locations`, `cards`, `sets`, `variants`, `printings`, `source_printing_observations`, `catalog_sync_status`, `catalog_source_payloads`, `stock` und `activity_log` sind implementiert; die übrigen Tabellen bleiben Vorschläge für spätere ausdrücklich beauftragte Pakete. Paketstatus stehen im [Aufgabenindex](aufgaben/README.md). Fremdschlüssel, positive Mengen und atomare Bestandsänderungen sind verbindliche fachliche Regeln.
 
 ## Benutzer und Standorte
 
 | Tabelle | Wesentliche Felder | Bedeutung |
 | --- | --- | --- |
 | `users` | `id`, `identity_subject`, `display_name`, `active` | Genau zwei freigeschaltete Benutzer; externe Identität eindeutig zugeordnet. |
-| `locations` | `id`, `name`, `kind`, `parent_id`, `person_id` | Baum aus Personenstandorten, Boxen, Bindern, Fächern, Decks und Cubes. |
-| `loans` | `id`, `physical_deck_id`, `from_location_id`, `borrower_id`, `started_at`, `due_at`, `returned_at`, `note` | Ausleihverlauf physischer Decks. |
+| `locations` | `id`, `name`, `kind`, `parent_id` | Frei benannter Ordnerbaum ohne Benutzerzuordnung. `kind` ist ausschließlich intern `folder` oder `unknown`, kein auswählbarer Typ. |
 
-Ein Personenstandort ist ein Wurzelknoten mit `person_id`. Alle darunterliegenden Behälter erben den aktuellen Aufenthaltsort daraus. Ein eigener Wurzelknoten „Ungeklärter Standort“ erlaubt ehrliche Importe. Zyklen sind unzulässig. Deck- und Cube-Standorte haben keine untergeordneten Standorte. Nicht leere Standorte werden nicht versehentlich gelöscht; Inhalte müssen vorher verschoben werden.
+Normale Ordner dürfen auf oberster Ebene (`parent_id = NULL`) oder unter anderen Ordnern liegen und gleichzeitig Karten und weitere Ordner enthalten. Ein einzelner Standardordner für ungeklärte Eingänge wird mit der Schemaeinrichtung automatisch angelegt, falls noch keiner existiert. Bei bestehenden Daten bleiben dessen ID und Name erhalten. Er bleibt ein geschützter Wurzelknoten: umbenennbar, aber nicht verschieb- oder löschbar. Die übrigen Wurzeln besitzen keine Sonderrolle.
+
+`person_id`, der Typ `person` und daraus abgeleitete Personenfelder entfallen nach D11. Benutzer sind ausschließlich Zugangsidentitäten; Namen wie „Rico“ und „Remo“ sind gewöhnliche Ordnernamen. Auswertungsbereiche ergeben sich aus einem ausdrücklich gewählten Ordner samt Unterordnern oder dem Gesamtbestand. Die frühere automatische Sammlungszuordnung über Benutzerwurzeln ist aufgehoben.
+
+Fremdschlüssel, Namensprüfung, eindeutiger Standardordner und dessen Wurzelform werden durch SQLite erzwungen. Standortfunktionen validieren Eltern, Zyklen und geschützten Standardordner in unmittelbaren Transaktionen. Nicht leere Ordner werden nicht gelöscht. Verschieben nach `NULL` bedeutet oberste Ebene; beim Löschen wird der tatsächliche Parent serverseitig ermittelt. Rezepte für Decks/Cubes sind keine Standorte.
+
+Vorwärtsmigration `0007_unowned_location_folders` entfernt die Benutzerbindung und überführt bisherige Personenstandorte bei gleichen IDs, Namen und Elternbeziehungen in normale Ordner. Vorhandene Bestands-/Verlaufsdaten bleiben erhalten. Standort- und Bestandstabelle werden wegen ihrer SQLite-Fremdschlüsselabhängigkeit innerhalb derselben Migration über temporäre Kopien neu aufgebaut, ohne Fremdschlüssel auszuschalten; Fehler rollen einschließlich Migrationsjournal zurück. Die unveränderte Migration 0006 vereinheitlicht davor die früheren Box-/Binder-/Fach-Typen. Es bleiben keine temporären Tabellen im Schema.
 
 ## Katalog und Sammelziele
 
@@ -38,22 +43,24 @@ YGOPRODecks `card_sets`-Angaben werden als Quellbeobachtungen gespeichert. Sie l
 
 | Tabelle | Wesentliche Felder |
 | --- | --- |
-| `stock` | `id`, `card_id?`, `variant_id?`, `printing_id?`, `language`, `edition`, `location_id`, `quantity`, `resolution_status`, `source_import_row_id?`, `version`, Zeitstempel |
+| `stock` | `id`, `card_id`, `variant_id?`, `printing_id?`, `source_observation_id?`, `language`, `edition`, `location_id`, `quantity`, `version`, Zeitstempel |
 | `activity_log` | `id`, `actor_id`, `action`, `entity_type`, `entity_id`, `details_json`, `request_id`, `created_at` |
 
-Ein Bestandsdatensatz beschreibt eine Menge gleichartiger Karten an einem Ort. `quantity` ist eine positive ganze Zahl. Unbekannte Sprache bleibt `unknown`. Bei aufgelösten Einträgen müssen Karte, Variante und Druck konsistent sein; Druckreferenzen dürfen bei unvollständiger Erfassung fehlen.
+Ein Bestandsdatensatz beschreibt eine Menge gleichartiger Karten an einem Ort. `card_id` ist für die manuelle Erfassung erforderlich; `quantity` und `version` sind positive sichere Ganzzahlen. Sprache ist `unknown`, `de` oder `en`. Eine bestätigte Variante muss zur Karte und Edition passen; ein Druck muss zusätzlich zur Variante und Sprache passen. Eine unbestätigte Quellenbeobachtung muss zur Karte gehören und kann keine bestätigte Variante oder Druckreferenz ersetzen.
 
-`stock.edition` speichert die Editionsangabe des physischen Bestands (`unknown`, `first`, `unlimited`, `not_applicable`), auch ohne aufgelöste Variante. Eine eindeutig gewählte Katalogvariante kann sie vorbelegen; sonst gilt `unknown`. Benutzer dürfen sie manuell ergänzen oder korrigieren. Bei vorhandener Variantenreferenz muss sie mit deren Edition übereinstimmen; eine Korrektur darf keine widersprüchliche Referenz zurücklassen. Katalogupdates überschreiben keine gespeicherte Bestandsedition. Unterschiedliche Editionen bleiben bei Gruppierung und Verschiebung getrennt. Die manuelle Angabe legt keine neue globale Katalogvariante an.
+Die zusätzliche Edition `limited` / „Limited Edition“ ist am 3. November 2026 aufgrund der Echtdatei ausdrücklich beschlossen, aber noch nicht implementiert. P2-08 muss Schema, Migration, Validierung, Anzeige und Variantenbezug gemeinsam ergänzen; `not_applicable` ist kein Ersatz.
+
+`stock.edition` speichert die Editionsangabe des physischen Bestands (`unknown`, `first`, `unlimited`, `not_applicable`), auch ohne aufgelöste Variante. Eine eindeutig gewählte Katalogvariante kann sie vorbelegen; sonst gilt `unknown`. Benutzer dürfen sie manuell ergänzen oder korrigieren. Bei vorhandener Variantenreferenz muss sie mit deren Edition übereinstimmen; eine Korrektur darf keine widersprüchliche Referenz zurücklassen. Katalogupdates überschreiben keine gespeicherte Bestandsedition. Unterschiedliche Editionen bleiben getrennt. Bestätigte Zeilen derselben Variante, Edition und desselben Standorts werden unabhängig von Druckreferenz und Sprache zusammengezählt und mit Sprachaufteilung gezeigt. Unbestätigte Beobachtungen werden je Beobachtung getrennt; manuelle Zeilen ohne Variante/Beobachtung gruppieren je Karte, Edition und Standort. Die manuelle Angabe legt keine neue globale Katalogvariante an.
 
 Unaufgelöste Importzeilen behalten ihre Originalbeschreibung in der Importtabelle. Ihre Menge kann physisch verortet sein, auch wenn Karte oder Variante noch unbekannt sind. Nur bestätigte Varianten erfüllen Set-Ziele.
 
-Mehrere gleichartige Datensätze am selben Ort dürfen zur Wahrung der Importherkunft bestehen. Die Oberfläche summiert sie. Es wird keine komplizierte globale Zusammenführung von Herkunftsdaten benötigt.
+Mehrere gleichartige Datensätze am selben Ort bleiben für versionsgeprüfte Korrekturen einzeln erhalten; die Oberfläche fasst sie nur zur Anzeige zusammen. Ein Korrekturvorgang darf Menge, Sprache, Edition und Referenz für dieselbe Karte am selben Ort ändern. Karte und Standort bleiben dabei unverändert; Bestandsbewegungen gehören zu einem späteren Paket. Jeder Vorgang speichert Akteur, Request-ID, Zeit und verständliche Vorher-/Nachher-Werte im selben unmittelbaren SQLite-Commit. Ein fehlgeschriebener Verlauf rollt die Bestandsänderung zurück. Nullmengen werden abgewiesen; ein leerer Bestandsdatensatz wird nicht gespeichert.
 
 Die Anwendung prüft `version` beziehungsweise aktuelle Mengen beim Speichern. Bei einer zwischenzeitlichen Änderung wird ein verständlicher Konflikt angezeigt. Änderungen werden in kurzen SQLite-Transaktionen ausgeführt; keine stillen Überschreibungen und keine negativen Mengen.
 
 ### Beispiel einer Verschiebung
 
-Ausgang: fünf deutsche Exemplare einer Variante in Box A. Zwei sollen in Deck B.
+Ausgang: fünf deutsche Exemplare einer Variante in Box A. Zwei sollen in Box B.
 
 1. Benutzer, Ausgangsbestand, Ziel und Menge prüfen.
 2. Transaktion beginnen und aktuellen Bestand erneut prüfen.
@@ -65,12 +72,11 @@ Bei Fehlern wird alles zurückgerollt. Gesamtmenge bleibt fünf. Bei vollständi
 
 ### Abgeleitete Werte
 
-- Aktuelle Person: über den Standortbaum ermitteln.
-- Person für Sammlungszuordnung: bei Deckinhalt der Deckbesitzer, sonst die aktuelle Person.
-- Verfügbarkeit: nach Standort und Behältertyp berechnen. Deck- und Cube-Inhalte gelten standardmäßig als belegt.
+- Sammlungsbereich: ausgewählter Ordner samt allen Unterordnern oder der gesamte Bestand; keine automatische Benutzer-/Personenzuordnung.
+- Deck-/Cube-Verfügbarkeit: Bestand je Kartenidentität am gewählten Standort einschließlich Unterstandorten mit dem Bedarf aller Listenbereiche vergleichen. Fehlmenge = max(0, Bedarf − Bestand). Andere Rezepte binden keine Mengen.
 - Set-Vervollständigung: Anzahl verschiedener bestätigter `variant_id` im gewählten Sammlungsumfang geteilt durch die Zahl der gültigen Ziele des Sets.
 
-Diese Werte werden zunächst nicht in weiteren Tabellen dupliziert. Ein Behälterwechsel darf keine veralteten persönlichen Summen hinterlassen.
+Diese Werte werden zunächst nicht in weiteren Tabellen dupliziert. Ein Ordnerwechsel muss beim erneuten Abruf in den betreffenden Bereichssummen berücksichtigt werden.
 
 ## Decks und Cubes
 
@@ -79,13 +85,11 @@ Diese Werte werden zunächst nicht in weiteren Tabellen dupliziert. Ein Behälte
 | `deck_lists` | `id`, `name`, `format`, `banlist_version_id?`, `notes` | Theoretisches Rezept. |
 | `deck_entries` | `deck_list_id`, `card_id`, `section`, `quantity`, `preferred_variant_id?` | Main, Extra und Side; konkrete Druckpräferenz optional. |
 | `deck_versions` | `id`, `deck_list_id`, `snapshot_json`, `created_at` | Explizit gespeicherte Rezeptstände. |
-| `physical_decks` | `id`, `location_id`, `owner_id`, `deck_list_id?` | Physischer Behälter mit Besitzer. |
 | `cube_lists` | `id`, `name`, `notes` | Cube-Rezept. |
 | `cube_entries` | `id`, `cube_list_id`, `card_id`, `quantity`, `pool`, `category?`, `preferred_variant_id?` | Normaler Pool oder Extra-Deck-Pool. |
 | `cube_versions` | `id`, `cube_list_id`, `snapshot_json`, `created_at` | Gespeicherte Cube-Stände. |
-| `physical_cubes` | `id`, `location_id`, `cube_list_id?` | Physischer Cube ohne Besitzerfeld. |
 
-Physische Inhalte ergeben sich ausschließlich aus `stock.location_id`. Es gibt keine zweite Mengenliste, die dieselben physischen Karten nochmals reserviert. Rezept und tatsächliche Zusammenstellung dürfen vorübergehend abweichen; die Oberfläche zeigt den Unterschied.
+Decks und Cubes speichern keine Standort-, Besitzer- oder Bestandsreferenzen. Der gewählte Standort ist nur ein Abfrageumfang für die Anzeige: benötigt, vorhanden, fehlend = max(0, benötigt − vorhanden); vollständig genau dann, wenn jede Fehlmenge null ist. Innerhalb einer Liste werden Mengen je Kartenidentität über alle Bereiche summiert. Physischer Bestand ergibt sich ausschließlich aus `stock.location_id`. Änderungen und Versionen von Rezepten bewegen oder reservieren nichts. Die früher geplanten Tabellen für physische Decks/Cubes und Deckausleihe entfallen nach D07.
 
 ## Formate und Bannlisten
 

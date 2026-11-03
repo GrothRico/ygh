@@ -29,6 +29,34 @@
       "when": 1793624921323,
       "tag": "0003_catalog_source_payloads",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793628445001,
+      "tag": "0004_locations",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1793630000000,
+      "tag": "0005_stock",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1793704826792,
+      "tag": "0006_location_folders",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1793708400000,
+      "tag": "0007_unowned_location_folders",
+      "breakpoints": true
     }
   ]
 }

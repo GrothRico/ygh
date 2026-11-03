@@ -1,7 +1,12 @@
 import { requireReadAccess } from "../server/access";
+import Link from "next/link";
+import Form from "next/form";
 import { MAX_SEARCH_RESULTS, searchCards } from "../server/catalog/search";
 import { logEvent, withRequestContext } from "../server/logging";
 import { CardArtwork } from "./CardArtwork";
+import { listLocations } from "../server/locations";
+import { getStockChoices, type StockChoice } from "../server/stock";
+import { InlineStockCapture, InlineStockCaptureGroup, SearchDetailsPanel, SearchDetailsToggle } from "./InlineStockCapture";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -32,12 +37,24 @@ export default async function HomePage({ searchParams = Promise.resolve({}) }: {
     const databasePath = process.env.DATABASE_PATH;
     let results: ReturnType<typeof searchCards> = [];
     let searchUnavailable = false;
+    let captureUnavailable = false;
+    let locations: ReturnType<typeof listLocations> = [];
+    const choicesByCard: Record<string, StockChoice[]> = {};
     if (query && databasePath) {
       try {
         results = searchCards(databasePath, query);
       } catch {
         searchUnavailable = true;
         logEvent({ event: "request.failed", status: 500, durationMs: 0, reason: "internal" });
+      }
+      if (!searchUnavailable && results.length > 0) {
+        try {
+          locations = listLocations(databasePath);
+          for (const card of results) choicesByCard[card.id] = getStockChoices(databasePath, card.id);
+        } catch {
+          captureUnavailable = true;
+          logEvent({ event: "request.failed", status: 500, durationMs: 0, reason: "internal" });
+        }
       }
     }
 
@@ -51,6 +68,7 @@ export default async function HomePage({ searchParams = Promise.resolve({}) }: {
           </a>
           <nav aria-label="Hauptnavigation">
             <a className="nav-link" href="#start" aria-current="page">Startseite</a>
+            <Link className="nav-link" href="/bestand">Bestand</Link>
           </nav>
           <span className="private-label"><span aria-hidden="true" />Privat</span>
         </header>
@@ -67,19 +85,19 @@ export default async function HomePage({ searchParams = Promise.resolve({}) }: {
           </section>
           <section className="catalog-search" aria-labelledby="search-title">
             <h2 id="search-title">Kartensuche</h2>
-            <form action="/" method="get" role="search">
+            <Form action="/" role="search">
               <label htmlFor="card-query">Kartenname oder gedruckter Code</label>
               <div className="search-row">
                 <input id="card-query" name="q" type="search" maxLength={100} defaultValue={query} autoComplete="off" />
                 <button type="submit">Suchen</button>
               </div>
-            </form>
+            </Form>
             {query && (
               <div className="search-results" aria-live="polite">
                 <h3>Treffer für „{query}“</h3>
                 {searchUnavailable ? <p role="status">Die Kartensuche ist derzeit nicht verfügbar. Request-ID: {requestId}</p> : results.length === 0 ? <p>Keine Karten gefunden.</p> : <p>{results.length === MAX_SEARCH_RESULTS ? `${results.length} oder mehr Treffer` : `${results.length} Treffer`}</p>}
                 {!searchUnavailable && <p className="image-note">Kartenbilder zeigen die englische Quellenabbildung; sie bestätigen keine konkrete Druckvariante.</p>}
-                <ul>
+                <InlineStockCaptureGroup><ul>
                   {!searchUnavailable && results.map((card) => {
                     const label = card.nameDe ?? card.nameEn ?? "Karte";
                     return (
@@ -87,24 +105,20 @@ export default async function HomePage({ searchParams = Promise.resolve({}) }: {
                         <CardArtwork cardId={card.sourceId ? card.id : null} label={label} />
                         <div className="search-card-content">
                           <h4>{card.nameDe ?? card.nameEn}</h4>
-                          {card.nameDe && card.nameEn && <p>{card.nameEn}</p>}
-                          {card.printings.length > 0 ? (
-                            <ul className="printing-list">
-                              {card.printings.map((printing, index) => (
-                                <li key={`${printing.kind}-${printing.variantId ?? printing.code}-${index}`}>
-                                  <strong>{printing.code}</strong> · {printing.setName} · {printing.rarity}
-                                  {printing.kind === "confirmed" ? ` · ${printing.language === "de" ? "Deutsch" : printing.language === "en" ? "Englisch" : printing.language} · ${printing.edition === "first" ? "1st Edition" : printing.edition === "unlimited" ? "Unlimited" : "Nicht anwendbar"}` : " · Druckangabe nicht bestätigt"}
-                                  {printing.kind === "confirmed" && printing.artworkKey !== "default" ? ` · Artwork ${printing.artworkKey}` : ""}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : <p>Keine Druckangaben gespeichert.</p>}
-                          {card.morePrintings > 0 && <p>Weitere Druckangaben: {card.morePrintings}</p>}
+                          <SearchDetailsToggle cardId={card.id} />
+                          <SearchDetailsPanel cardId={card.id}>
+                            {captureUnavailable ? <p>Bestandserfassung ist derzeit nicht verfügbar. Request-ID: {requestId}</p> : <InlineStockCapture cardId={card.id} cardName={label} locations={locations} choices={choicesByCard[card.id] ?? []} />}
+                            {card.nameDe && card.nameEn && <p>{card.nameEn}</p>}
+                            {card.printings.length > 0 ? <ul className="printing-list">{card.printings.map((printing, index) => (
+                              <li key={`${printing.kind}-${printing.variantId ?? printing.code}-${index}`}><strong>{printing.code}</strong> · {printing.setName} · {printing.rarity}{printing.kind === "confirmed" ? ` · ${printing.language === "de" ? "Deutsch" : printing.language === "en" ? "Englisch" : printing.language} · ${printing.edition === "first" ? "1st Edition" : printing.edition === "unlimited" ? "Unlimited" : "Nicht anwendbar"}` : " · Druckangabe nicht bestätigt"}{printing.kind === "confirmed" && printing.artworkKey !== "default" ? ` · Artwork ${printing.artworkKey}` : ""}</li>
+                            ))}</ul> : <p>Keine Druckangaben gespeichert.</p>}
+                            {card.morePrintings > 0 && <p>Weitere Druckangaben: {card.morePrintings}</p>}
+                          </SearchDetailsPanel>
                         </div>
                       </li>
                     );
                   })}
-                </ul>
+                </ul></InlineStockCaptureGroup>
               </div>
             )}
           </section>

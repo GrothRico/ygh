@@ -103,7 +103,7 @@ try {
     await local.response.arrayBuffer();
     const protectedResponse = await fetch(local.address, {
       headers: {
-        Host: "127.0.0.1:3001",
+        Host: "127.0.0.1:13001",
         "Tailscale-User-Login": login,
       },
       signal: AbortSignal.timeout(5000),

@@ -54,6 +54,7 @@ Vor Änderungen `git status` prüfen. Ausgangspunkt und vorhandene Änderungen i
 | Status | Bedeutung |
 | --- | --- |
 | Geplant | Noch nicht beauftragt oder Voraussetzungen noch offen. |
+| Entfallen | Durch ausdrückliche Benutzerentscheidung aufgehoben; keine Implementierung oder Abnahme behauptet. |
 | In Arbeit | Explizit beauftragt und begonnen. |
 | Blockiert | Konkrete fehlende Information oder technische Voraussetzung dokumentiert. |
 | Review | Umsetzung und Selbstprüfung übergeben; noch nicht abgenommen. |

@@ -417,13 +417,13 @@ describe("serverseitiger Zugriffsschutz", () => {
     vi.stubEnv("YGH_LOCAL_DEV_BUILD_ALLOWED", "true");
     vi.stubEnv("YGH_LOCAL_DEV_USER", "admin");
     vi.stubEnv("NODE_ENV", "development");
-    requestHeaders(null, { Host: "127.0.0.1:3001" });
+    requestHeaders(null, { Host: "127.0.0.1:13001" });
 
     const callback = vi.fn(() => new Response("ok"));
     const response = await withWriteAccess(
-      new Request("http://127.0.0.1:3001/api/example", {
+      new Request("http://127.0.0.1:13001/api/example", {
         method: "POST",
-        headers: { Origin: "http://127.0.0.1:3001", Host: "127.0.0.1:3001" },
+        headers: { Origin: "http://127.0.0.1:13001", Host: "127.0.0.1:13001" },
       }),
       callback,
       "admin",
@@ -432,24 +432,34 @@ describe("serverseitiger Zugriffsschutz", () => {
     expect(callback).toHaveBeenCalledOnce();
 
     const rejectedRequests = [
-      new Request("http://127.0.0.1:3001/api/example", {
+      new Request("http://127.0.0.1:13001/api/example", {
         method: "GET",
-        headers: { Origin: "http://127.0.0.1:3001", Host: "127.0.0.1:3001" },
+        headers: { Origin: "http://127.0.0.1:13001", Host: "127.0.0.1:13001" },
       }),
-      new Request("http://127.0.0.1:3001/api/example", {
+      new Request("http://127.0.0.1:13001/api/example", {
         method: "POST",
-        headers: { Origin: "https://attacker.invalid", Host: "127.0.0.1:3001" },
+        headers: { Origin: "https://attacker.invalid", Host: "127.0.0.1:13001" },
       }),
-      new Request("http://127.0.0.1:3001/api/example", {
+      new Request("http://127.0.0.1:13001/api/example", {
         method: "POST",
-        headers: { Origin: "http://127.0.0.1:3001", Host: "localhost:3001" },
+        headers: { Origin: "http://127.0.0.1:13001", Host: "localhost:13001" },
       }),
-      new Request("http://127.0.0.1:3001/api/example", {
+      new Request("http://127.0.0.1:13001/api/example", {
         method: "POST",
-        headers: { Host: "127.0.0.1:3001" },
+        headers: { Host: "127.0.0.1:13001" },
       }),
     ];
-    const expectedStatuses = [405, 403, 403, 403];
+    rejectedRequests.push(
+      new Request("http://127.0.0.1:13001/api/example", {
+        method: "POST",
+        headers: { Origin: "http://127.0.0.1:3001", Host: "127.0.0.1:13001" },
+      }),
+      new Request("http://127.0.0.1:13001/api/example", {
+        method: "POST",
+        headers: { Origin: "http://127.0.0.1:13001", Host: "127.0.0.1:3001" },
+      }),
+    );
+    const expectedStatuses = [405, 403, 403, 403, 403, 403];
     for (const [index, request] of rejectedRequests.entries()) {
       expect((await withWriteAccess(request, callback)).status).toBe(expectedStatuses[index]);
     }
@@ -457,9 +467,9 @@ describe("serverseitiger Zugriffsschutz", () => {
 
     vi.stubEnv("YGH_LOCAL_DEV_USER", "member");
     const denied = await withWriteAccess(
-      new Request("http://127.0.0.1:3001/api/example", {
+      new Request("http://127.0.0.1:13001/api/example", {
         method: "POST",
-        headers: { Origin: "http://127.0.0.1:3001", Host: "127.0.0.1:3001" },
+        headers: { Origin: "http://127.0.0.1:13001", Host: "127.0.0.1:13001" },
       }),
       callback,
       "admin",

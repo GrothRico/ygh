@@ -38,7 +38,7 @@ Lokale Grundlage und Betriebsvorbereitung wurden mit P1-Paketen umgesetzt. Der A
 - Katalogimport und Bildspeicherung mit nachvollziehbaren Quellen.
 - Suche nach deutschem/englischem Namen und Set-Code.
 - Variantenwahl und Mengen mit bekannter oder unbekannter Sprache.
-- Personenstandorte, Boxen, Binder, Fächer und unsortierter Eingang.
+- Frei benannte Ordner ohne Benutzer-/Typbindung, automatisch ungeklärter Eingang; gemeinsame Ordner-/Bestandsansicht mit Desktop-Baum und mobiler Navigation.
 - Bild- und Listenansichten, Detailverteilung und gemeinsamer Bestand.
 - Mengenverschiebungen und Änderungsverlauf.
 
@@ -52,30 +52,29 @@ Lokale Grundlage und Betriebsvorbereitung wurden mit P1-Paketen umgesetzt. Der A
 - Originaldateien und Zeilen erhalten, Mengensummen je Portfolio abgleichen.
 - Watchlist-Einträge von physischen Beständen trennen.
 - Wiederholte Dateiübernahme erkennen und sichere Importkorrektur ermöglichen.
-- Set-Ansichten für beide Personen und gemeinsam; alle Varianten, sprachunabhängige Erfüllung.
+- Set-Ansichten für gewählte Ordnerbereiche einschließlich Unterordnern und gemeinsam; alle Varianten, sprachunabhängige Erfüllung.
 
 **Abnahme:** Originalmenge entspricht übernommenen plus ausdrücklich ausgeschlossenen beziehungsweise noch nicht übernommenen Mengen. Umgeordnete Spalten und deutsche Sonderzeichen werden verarbeitet. Fehlende Sprache/Edition werden nicht geraten. Deutsch und Englisch derselben Variante erfüllen ein Ziel. Andere Editionen oder Artworks bleiben getrennt. Ungeprüfte Setkataloge zeigen vorläufige Quoten.
 
 **Reale Migration:** Ohne tatsächliche Collectr-Datei ist der Adapter vorbereitet, aber nicht an der Sammlung validiert. Vor dem endgültigen Umzug wird eine echte Datei zunächst als Vorschau verarbeitet; keine Behauptung eines verlustfreien Imports allein aufgrund synthetischer Tests.
 
-## M4 Deckbau und Deckausleihe
+## M4 Deckbau und Verfügbarkeit
 
-**Ergebnis:** Theoretische und physische Decks mit verlässlicher Verfügbarkeitsanzeige.
+**Ergebnis:** Nichtphysische Deckrezepte mit verlässlicher standortbezogener Verfügbarkeitsanzeige.
 
 - Main/Extra/Side, Filter, Tap-Steuerung und Desktop-Drag-and-drop.
 - Aktuelles TCG, freier Modus und eigene versionierte Bannlisten.
 - Speichern, Kopieren, einfache Versionen sowie ein dokumentiertes Import-/Exportformat.
-- Pickliste, physisches Zusammenstellen und Rezeptänderungen mit bestätigten Umbuchungen.
-- Deckbesitzer, Ausleihe, Rückgabe und Standortanzeige.
+- Im Deckkontext benötigte, vorhandene und fehlende Mengen für einen wählbaren Standort einschließlich Unterstandorten sowie Vollständigkeit anzeigen.
 
-**Abnahme:** Zwei Entwürfe dürfen dieselben Karten benötigen; zwei physische Decks dürfen dieselben Exemplare nicht enthalten. Gebundene Karten bleiben sichtbar, aber nicht frei. Bannlisten zählen über alle Deckbereiche gemeinsam. Ein ausgeliehenes Deck zählt weiterhin zur Sammlung des Besitzers, erscheint physisch beim Entleiher und wird gemeinsam nur einmal gezählt. Beim dauerhaften Entfernen einer Karte aus dem Deck gilt der neue Standort.
+**Abnahme:** Mehrere Rezepte dürfen dieselben Karten benötigen; keines reserviert oder bewegt Bestand. Mengen über Main/Extra/Side werden gemeinsam mit dem Bestand am gewählten Ort verglichen. Andere Standorte erfüllen keine lokale Fehlmenge. Bestands- und Standortänderungen werden beim erneuten Abruf berücksichtigt. Bannlisten zählen über alle Deckbereiche gemeinsam. Es gibt keine Deckbesitzerregel, physischen Deckobjekte oder Deckausleihe.
 
 ## M5 Cubes und lokale Drafts
 
-**Ergebnis:** Cube-Entwurf, physischer Cube und nutzbarer Zweispieler-Draft.
+**Ergebnis:** Nichtphysische Cube-Rezepte und nutzbarer Zweispieler-Draft.
 
 - Cube-Editor mit Mengen, normalen/Extra-Deck-Pools und Verfügbarkeitsanzeige.
-- Physische Zusammenstellung; Sammlungszuordnung nach aktuellem Standort.
+- Standortbezogene Verfügbarkeit wie bei Decks; Rezepte bewegen oder reservieren keinen Bestand.
 - Pack-Draft mit 15er-Vorgabe, konfigurierbaren Runden und anschließenden Extra-Deck-Packs.
 - Gespeicherte Vorlagen, Seeds, Pick-Verlauf und Fortsetzen lokaler Sitzungen.
 - Manuelle Plätze, einfacher simulierter Picker und Übergabeansicht.
@@ -105,7 +104,7 @@ Lokale Grundlage und Betriebsvorbereitung wurden mit P1-Paketen umgesetzt. Der A
 
 ## Prüfstrategie
 
-Gezielte Unit- und Integrationstests für Mengenerhaltung, Transaktionen, Sammlungszuordnung, Importabgleich, Bannlisten und Draft-Verteilung. Wenige Ende-zu-Ende-Tests für Anmeldung, Erfassen, Verschieben, Deckausleihe und Draftabschluss. Sicherheitsprüfungen für unautorisierte Routen, Identitätsspoofing bei Proxyintegration, Uploadgrenzen und öffentliche Erreichbarkeit. Praktische Prüfung auf iPhone, Android und Desktop.
+Gezielte Unit- und Integrationstests für Mengenerhaltung, Transaktionen, Sammlungszuordnung, Importabgleich, Bannlisten und Draft-Verteilung. Wenige Ende-zu-Ende-Tests für Anmeldung, Erfassen, Verschieben, Deckverfügbarkeit und Draftabschluss. Sicherheitsprüfungen für unautorisierte Routen, Identitätsspoofing bei Proxyintegration, Uploadgrenzen und öffentliche Erreichbarkeit. Praktische Prüfung auf iPhone, Android und Desktop.
 
 Keine Tests, die nur die Implementierung nachschreiben. Keine umfangreichen Lasttests für unrealistische Nutzerzahlen. Ein repräsentativer 15.000-Karten-Datensatz prüft die tatsächlichen Ansichten und Suchabläufe.
 

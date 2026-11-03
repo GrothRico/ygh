@@ -1,6 +1,6 @@
 # Entwicklung
 
-Stand mit Repository abgeglichen: 2. November 2026. Diese Datei beschreibt den vorhandenen Entwicklungsweg. Paketstatus und Aufträge stehen ausschließlich im [Aufgabenindex](aufgaben/README.md). Frühere Prüfergebnisse sind in der [Prüfchronik](historie/pruefprotokolle-p1.md) erhalten; Servereinrichtung und offene Live-Prüfungen stehen unter [Betrieb](betrieb.md).
+Stand mit Repository abgeglichen: 3. November 2026. Diese Datei beschreibt den vorhandenen Entwicklungsweg. Paketstatus und Aufträge stehen ausschließlich im [Aufgabenindex](aufgaben/README.md). Frühere Prüfergebnisse sind in der [Prüfchronik](historie/pruefprotokolle-p1.md) erhalten; Servereinrichtung und offene Live-Prüfungen stehen unter [Betrieb](betrieb.md).
 
 ## Voraussetzungen und lokale Einrichtung
 
@@ -43,7 +43,7 @@ Der Hauptbranch heißt seit dem 2. November 2026 auf ausdrücklichen Benutzerwun
 
 ## Datenbank und Migrationen
 
-Implementiert sind `users`, `cards`, `sets`, `variants`, `printings`, `source_printing_observations`, `catalog_sync_status` und `catalog_source_payloads` samt Drizzle-Migrationsmetadaten in `src/server/db/`. Die Migrationen `0001_catalog.sql`, `0002_catalog_sync.sql` und `0003_catalog_source_payloads.sql` ergänzen den Katalog. Das [Datenmodell](datenmodell.md) beschreibt zusätzlich geplante Tabellen, die noch nicht existieren. Die Verbindung aktiviert Fremdschlüssel. Migrationen werden versioniert; kein `drizzle-kit push`.
+Implementiert sind `users`, `locations`, `cards`, `sets`, `variants`, `printings`, `source_printing_observations`, `catalog_sync_status`, `catalog_source_payloads`, `stock` und `activity_log` samt Drizzle-Migrationsmetadaten in `src/server/db/`. Die Migrationen `0001_catalog.sql`, `0002_catalog_sync.sql` und `0003_catalog_source_payloads.sql` ergänzen den Katalog; `0004_locations.sql` ergänzt den physischen Standortbaum; `0005_stock.sql` ergänzt Kartenbestand und Verlauf. Das [Datenmodell](datenmodell.md) beschreibt zusätzlich geplante Tabellen, die noch nicht existieren. Die Verbindung aktiviert Fremdschlüssel. Migrationen werden versioniert; kein `drizzle-kit push`.
 
 ```sh
 npm run db:generate
@@ -51,6 +51,20 @@ DATABASE_PATH=/absoluter/pfad/zur/entbehrlichen/test.sqlite npm run db:migrate
 ```
 
 Vor Ausführung einen existierenden Testordner und bewusst gewählten Datenbankpfad einsetzen. Generierte SQL-Dateien prüfen; Migration echter Daten ist kein Entwicklungstest. Das Schema oder die Verbindung nicht beim normalen Modulimport automatisch migrieren.
+
+### Bestand und Ordner verwalten
+
+Die geschützte Ansicht `/bestand` bündelt Ordnerverwaltung und Kartenbestand. Auf Desktop steht links ein kompakter, klappbarer Baum; mobil bleiben rahmenlose Ordnerlinks, der größere Pfad und ein Zurück-Pfeil zum Parent. Einen zusätzlichen Standortfilter oder Startstandort-Assistenten gibt es nicht. `/standorte` leitet nach Identitätsprüfung nach `/bestand` weiter.
+
+Normale Ordner haben nur Name und Parent, keine Benutzer-/Typzuordnung. Den Ordner-plus-Button neben dem Pfad wählen; im Dialog den Namen eingeben und „Ordner anlegen“ bestätigen. Jeder neu geöffnete Dialog startet ohne alte Meldungen. Der separate Hinweis „Aktueller Ordner“ und die bisherige Eingabezeile entfallen; Pfadteile werden bei Hover/Fokus blau unterstrichen. Drei Punkte am Ordner öffnen Umbenennen, Bewegen und Löschen; auf Desktop bei Hover/Tastaturfokus, mobil dauerhaft sichtbar. Ein Klick außerhalb oder Escape schließt das Menü. Dialoge erhalten Eingaben bei Fehlern und unterstützen Abbrechen/Escape. Der Bewegungsdialog zeigt Ziele als Baum, den gewählten Pfad und „Oberste Ebene“. Eigener Ordner und Nachfahren sind gesperrt. Löschen verlangt Bestätigung und prüft erneut, ob weder Karten noch Unterordner vorhanden sind. Nach Löschen des geöffneten Ordners navigiert der Browser zum serverseitig ermittelten Parent. Alle Mutationen behalten Identitäts-, Aktivstatus-, Host-/Origin-Prüfungen.
+
+Migration `0007_unowned_location_folders` entfernt die bisherige Benutzerbindung bei erhaltenen IDs, Namen, Verschachtelungen, Beständen und Verlauf. Ein Standardordner „Ungeklärt“ wird bei fehlendem Eingang automatisch angelegt; vorhandene ID/Bezeichnung bleiben erhalten. Dieser Standardordner bleibt gegen Löschen und Verschieben geschützt. Der lokale Initialisierungsweg wendet Migrationen beim Start an; der normale lokale Stack wurde nach konsistenter Sicherung damit aktualisiert. Dies ist kein Produktivauftrag.
+
+### Karten erfassen und korrigieren
+
+Auf der Startseite eine Karte suchen und „Details und Erfassung“ öffnen; derselbe Detailschalter gilt für alle Suchtreffer. Druck/Variante, Sprache, Edition, Menge und Standort wählen und direkt hinzufügen. Sprache, Edition und Standort bleiben bei weiterer Suche im aktuellen Seitenzustand erhalten; Druck und Menge gelten je Treffer. Erfolgreiches Speichern und Fehler erhalten die Auswahlwerte, Einklappen erhält die Eingaben. Bilder werden weiterhin ausschließlich lokal geladen.
+
+Die kompakte Bestandsansicht zeigt das Kartenbild neben den Angaben; ausgeklappte Bearbeitungsformulare nutzen die volle Zeilenbreite. Dialoge unterscheiden Abbrechen und Speichern visuell. Die Bestandsansicht gruppiert bestätigte Zeilen je Variante, Edition und Standort sprachübergreifend mit Sprachaufteilung; unbestätigte Druckbeobachtungen bleiben getrennt. „Druckdetails und Bearbeitung“ öffnet alle sichtbaren Gruppen gemeinsam für Einzelzeilen, versionsgeprüfte Korrekturen und Verlauf. Korrekturen behalten Karte und Standort bei. Bis zu 25 Gruppen je Seite, bis zu fünf jüngste Verlaufsangaben je Einzelzeile; Ordnerwechsel beginnt auf Seite 1, Seitenlinks behalten den Ordnerumfang. Bestandsbewegungen gehören weiterhin zu P2-06. Beide Benutzer dürfen alle Bestände bearbeiten; jede geschützte Aktion prüft Identität und Host/Origin.
 
 ## Katalogimport
 
@@ -116,11 +130,11 @@ docker compose -p ygh-dev -f compose.dev.yaml down
 
 ## Lokaler Entwicklungszugang ohne Tailscale
 
-Der getrennte E09-Stack öffnet die geschützte Oberfläche mit zwei fest definierten synthetischen Testbenutzern. Er benötigt weder persönliche Tailscale-Logins noch `APP_ORIGIN`. Nur die Datei `compose.local.yaml` setzt den lokalen Modus und bindet den Hostport ausschließlich an `127.0.0.1:3001`. Nicht gleichzeitig mit `ygh-dev` starten, weil beide den Hostport 3001 verwenden.
+Der getrennte E09-Stack öffnet die geschützte Oberfläche mit zwei fest definierten synthetischen Testbenutzern. Er benötigt weder persönliche Tailscale-Logins noch `APP_ORIGIN`. Nur die Datei `compose.local.yaml` setzt den lokalen Modus und bindet den Hostport ausschließlich an `127.0.0.1:13001`. Der separate Tailscale-Entwicklungsstack `ygh-dev` bleibt auf Port 3001. Der lokale Zugang nutzt seit dem 3. November 2026 den eigenen Port 13001, um Kollisionen mit anderen Entwicklungsprojekten zu vermeiden.
 
 ```sh
 docker compose -p ygh-local -f compose.local.yaml up --build
-# Browser: http://127.0.0.1:3001
+# Browser: http://127.0.0.1:13001
 ```
 
 Standardmäßig meldet sich der Test-Admin an. Für die Mitgliedsrolle den Stack stoppen und vor demselben `up`-Befehl `YGH_LOCAL_DEV_USER=member` setzen:
@@ -132,7 +146,7 @@ YGH_LOCAL_DEV_USER=member docker compose -p ygh-local -f compose.local.yaml up -
 
 Zurück zum Test-Admin wird `YGH_LOCAL_DEV_USER` weggelassen. `down` erhält das Volume `ygh-local_local-data`; die Datenbank liegt fest unter `/data/collection-local.sqlite`. Der Start migriert eine neue Datenbank und richtet einmalig die zwei `.invalid`-Identitäten ein. Wiederstarts bewahren Benutzer-IDs, Aktivstatus und Daten. Fehlende Testbenutzer werden nicht wiederhergestellt. Eine bereits vorhandene Datenbank ohne genau diese beiden Testidentitäten wird vor Migration abgewiesen. Katalogfixtures und echte Sammlungen werden nicht geladen.
 
-`YGH_LOCAL_DEV_USER` wählt nur `admin` oder `member`; ein gesetzter ungültiger Wert sperrt den Zugriff. Requestheader, Cookies und URL-Parameter wählen keine Rolle. Lokale Lesezugriffe verlangen den exakten Host `127.0.0.1:3001`; Schreibzugriffe zusätzlich `POST` mit Origin `http://127.0.0.1:3001`. Next.js erhält in der Dev-Server-Phase ausschließlich die Hostfreigabe `127.0.0.1` für seine internen Entwicklungsressourcen. Das ist getrennt von Server-Action-Origin-Prüfungen; deren Konfiguration wird nicht gelockert. Der Anwendungshinweis zeigt Modus, Benutzer und Rolle dauerhaft. Logs kennzeichnen `local` und enthalten keine Login- oder Requestheader.
+`YGH_LOCAL_DEV_USER` wählt nur `admin` oder `member`; ein gesetzter ungültiger Wert sperrt den Zugriff. Requestheader, Cookies und URL-Parameter wählen keine Rolle. Lokale Lesezugriffe verlangen den exakten Host `127.0.0.1:13001`; Schreibzugriffe zusätzlich `POST` mit Origin `http://127.0.0.1:13001`. Next.js erhält in der Dev-Server-Phase ausschließlich die Hostfreigabe `127.0.0.1` für seine internen Entwicklungsressourcen. Das ist getrennt von Server-Action-Origin-Prüfungen; deren Konfiguration wird nicht gelockert. Der Anwendungshinweis zeigt Modus, Benutzer und Rolle dauerhaft. Logs kennzeichnen `local` und enthalten keine Login- oder Requestheader.
 
 Die lokale Auswahl wird nur in einem `next dev`-Build freigeschaltet. `next build` schreibt die Buildphase als feste Konstante ins Artefakt; veränderte Laufzeitflags können daraus keinen lokalen Authpfad machen. Diese Grenze kann nach `npm run build` mit dem echten Standalone-Artefakt geprüft werden:
 

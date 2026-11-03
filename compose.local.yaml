@@ -11,7 +11,7 @@ services:
       YGH_LOCAL_DEV_USER: ${YGH_LOCAL_DEV_USER-admin}
       DATABASE_PATH: /data/collection-local.sqlite
     ports:
-      - "127.0.0.1:3001:3000"
+      - "127.0.0.1:13001:3000"
     volumes:
       - local-data:/data
       - ./src:/app/src:ro
