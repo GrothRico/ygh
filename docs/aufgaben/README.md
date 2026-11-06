@@ -1,6 +1,6 @@
 # Aufgabenindex
 
-Stand geprüft: 3. November 2026. **P1-16 und P2-01 bis P2-05 sind abgenommen. Die Abnahme von P2-05 umfasst Bestandserfassung und -anzeige einschließlich gemeinsamer Ordnerverwaltung, Desktop-Baum, mobiler Navigation und Dialogaktionen. Kartenverschiebungen folgen in P2-06/P2-07.** P1-14 bleibt zurückgestellt; kein echter Server oder Betriebsauftrag. Die Tabelle ist die einzige laufende Paketstatusliste. [Dokumentationsübersicht](../README.md).
+Stand geprüft: 6. November 2026. **P1-16 und P2-01 bis P2-08 sind abgenommen. Die Abnahme von P2-05 umfasst Bestandserfassung und -anzeige einschließlich gemeinsamer Ordnerverwaltung, Desktop-Baum, mobiler Navigation und Dialogaktionen. P2-06 ergänzt die abgenommene Verschiebungsfunktion; P2-07 ergänzt die abgenommene Bedienoberfläche einschließlich Sammelauswahl, gruppierter Mengen und Verschiebedialog.** P1-14 bleibt zurückgestellt; kein echter Server oder Betriebsauftrag. Die Tabelle ist die einzige laufende Paketstatusliste. [Dokumentationsübersicht](../README.md).
 
 Für ein günstiges Modell: eine ID pro Chat/Durchgang. Der [Startprompt](../arbeit-mit-llm.md) und [AGENTS.md](../../AGENTS.md) gelten für jedes Paket. Offene Architekturentscheidungen zuerst klären; das Modell soll sie nicht während einer Implementierung improvisieren.
 
@@ -18,7 +18,7 @@ Für ein günstiges Modell: eine ID pro Chat/Durchgang. Der [Startprompt](../arb
 | ID | Paket | Voraussetzungen | Status |
 | --- | --- | --- | --- |
 | P0-01 | [Katalogabdeckung untersuchen](m0.md) | — | Abgenommen |
-| P0-02 | [Collectr-Vertrag beschreiben](m0.md) | — | Review |
+| P0-02 | [Collectr-Vertrag beschreiben](m0.md) | — | Abgenommen |
 | P0-03 | [Betriebskosten vergleichen](m0.md) | — | Abgenommen |
 | P0-04 | [Privaten Zugriff und Identität festlegen](m0.md) | P0-03 | Abgenommen |
 | P0-05 | [Entwicklungsvertrag festlegen](m0.md) | P0-04 | Abgenommen |
@@ -44,10 +44,10 @@ Für ein günstiges Modell: eine ID pro Chat/Durchgang. Der [Startprompt](../arb
 | P2-03 | [Bilder und Kartensuche](m2.md) | P2-02, P1-04 | Abgenommen |
 | P2-04 | [Standorte verwalten](m2.md) | P1-04, P1-02 | Abgenommen |
 | P2-05 | [Bestand erfassen und anzeigen](m2.md) | P2-03, P2-04 | Abgenommen |
-| P2-06 | [Teilmengen atomar verschieben](m2.md) | P2-05 | Geplant |
-| P2-07 | [Bestandsbedienung vervollständigen](m2.md) | P2-06 | Geplant |
-| P2-08 | [Limited Edition ergänzen](m2.md) | P2-05 | Geplant |
-| P3-01 | [Collectr-CSV parsen](m3.md) | P0-02, P2-05 | Geplant |
+| P2-06 | [Teilmengen atomar verschieben](m2.md) | P2-05 | Abgenommen |
+| P2-07 | [Bestandsbedienung vervollständigen](m2.md) | P2-06 | Abgenommen |
+| P2-08 | [Limited Edition ergänzen](m2.md) | P2-05 | Abgenommen |
+| P3-01 | [Collectr-CSV parsen](m3.md) | P0-02, P2-05 | Abgenommen |
 | P3-02 | [Importvorschau und Matching](m3.md) | P3-01 | Geplant |
 | P3-03 | [Import bestätigen und korrigieren](m3.md) | P3-02, P2-06, P2-08 | Geplant |
 | P3-04 | [Setquoten berechnen und anzeigen](m3.md) | P3-03 | Geplant |
@@ -77,7 +77,7 @@ Für ein günstiges Modell: eine ID pro Chat/Durchgang. Der [Startprompt](../arb
 
 ## Freigaben und verbleibende Grenzen
 
-- P0-01, P0-03 bis P0-06 sind als Planungsgrundlage freigegeben; P0-02 bleibt Review: Der echte Export wurde am 3. November lesend analysiert, der aktualisierte Vertrag ist noch nicht menschlich freigegeben.
+- P0-01, P0-02/E02 und P0-03 bis P0-06 sind als Planungsgrundlage freigegeben. Eine echte Übernahme bleibt P3-05 vorbehalten und erfordert dessen Voraussetzungen sowie einen eigenen Betriebsauftrag.
 - P1-01 bis P1-13 sind im dokumentierten lokalen Umfang abgenommen. P1-15 wurde am 28. Oktober 2026 nach erfolgreicher Hosted-CI abgenommen; [Prüfbelege](../historie/pruefprotokolle-p1.md#p1-15-automatische-repository-prüfungen).
 - P1-14 wurde am 28. Oktober ausdrücklich zurückgestellt. Externe Alarmzustellung, unabhängige Recovery-Unterlagen, echter B2-Restore, Netzwerk-/Geräteprüfung und Hostintegration bleiben vor echten Sammlungsdaten erforderlich. Die vollständige Liste steht im [Betriebshandbuch](../betrieb.md#offene-betriebsabnahme-p1-14).
 - Die lokale P2-01-Implementierung samt Selbstprüfungen und offenen Grenzen ist im [Prüfprotokoll](../historie/p2-01-2026-11-02.md) festgehalten; unabhängiger Review abgeschlossen, am 2. November 2026 vom Benutzer abgenommen.
@@ -113,7 +113,7 @@ Definitionsänderung vom 3. November 2026 ausdrücklich beauftragt: Decks und Cu
 
 P2-05-Verzeichnisnavigation am 3. November 2026 ausdrücklich beauftragt und umgesetzt: direkte Unterordner, Standortpfad und eine Ebene zurück auf dem vorhandenen Standortbaum. Bilder pro Standortordner bleiben eine vorgemerkte spätere Option. Unabhängiger Code-/Browserreview und gezielte Nacharbeit dokumentiert im [Paketprotokoll](../historie/p2-05-2026-11-03.md). Status bleibt Review.
 
-P0-02/E02 am 3. November 2026 anhand des echten Collectr-Exports ergänzt: [Analyse, Mengen und nächste Schritte](../untersuchungen/collectr-export-2026-11-03.md). Kein Import ausgeführt. Die bisher fehlende Datei liegt vor; persönliche Bestätigung des aktualisierten Vertrags steht aus. Limited Edition ist als Erweiterung beschlossen und in P2-08 als gezieltes zukünftiges Paket beschrieben; noch keine Schemaänderung. Reale Übernahme bleibt P3-05 nach den vorgesehenen Voraussetzungen vorbehalten.
+P0-02/E02 am 3. November 2026 anhand des echten Collectr-Exports ergänzt: [Analyse, Mengen und nächste Schritte](../untersuchungen/collectr-export-2026-11-03.md). Kein Import ausgeführt. Die bisher fehlende Datei liegt vor. Am 6. November 2026 nach bedingter Benutzerabnahme lesend nachgeprüft und freigegeben; versehentlich einschließlich Watchlist gezählte Editionszeilen im datierten Nachtrag korrigiert. Mengen unverändert bestätigt; physische Vollständigkeit und bestätigte Katalogzuordnungen bleiben offen. Limited Edition ist als Erweiterung beschlossen und inzwischen durch P2-08 umgesetzt und abgenommen. Reale Übernahme bleibt P3-05 nach den vorgesehenen Voraussetzungen vorbehalten.
 
 P2-05-Ordnervereinfachung am 3. November 2026 ausdrücklich beschlossen und umgesetzt: Standorttypen für normale Behälter entfallen zugunsten von Name und Parent (D10). Neue Vorwärtsmigration `0006_location_folders` erhält IDs, Namen, Baum, Bestände und Verlauf; Kontextanlage im geöffneten Bestandsordner fragt nur den Namen ab. Unabhängige Migrations-/Rollback-/Browserprüfung abgeschlossen, normaler lokaler Stack nach Sicherung aktualisiert. 98 Tests bestanden, 13 Linux-Skips; Typprüfung/Lint/Build erfolgreich. P2-05 bleibt Review; keine andere Aufgabe gestartet. [Prüfbericht](../historie/p2-05-2026-11-03.md#ux-nacharbeit-frei-benannte-standortordner-3-november-2026).
 
@@ -126,3 +126,26 @@ P2-05-Gestaltungsreview am 3. November 2026: kompakter Seitenkopf, ausgerichtete
 
 
 P2-05 am 3. November 2026 vom Benutzer nach dem Gestaltungsreview ausdrücklich abgenommen. Die Bedingung ist erfüllt: Karten beziehungsweise Teilmengen zwischen Standorten zu verschieben ist Bestandteil von P2-06 (Transaktion und Serveraufruf) und P2-07 (Bedienoberfläche), nicht von P2-05. Echte Telefone und aktuelle Hosted-CI bleiben ungeprüft; die bisherigen Prüfbelege stehen im [Paketprotokoll](../historie/p2-05-2026-11-03.md). Kein Folgepaket mit dieser Abnahme beauftragt oder gestartet.
+
+
+P2-06 am 3. November 2026 nach ausdrücklichem Auftrag umgesetzt und unabhängig geprüft: versionsgeprüfte atomare Teil-/Vollverschiebung, korrelierter Verlauf, geschützte Serveraktion und Vorwärtsmigration `0008_stock_movements`. 104 Tests bestanden, 13 Linux-Skips; Typprüfung, Lint und Build erfolgreich. Zwei gleichzeitige Worker-Aufrufe auf dieselbe Datei sowie Auditfehler-Rollbacks geprüft. Keine Migration des laufenden lokalen Bestands, kein Verschiebedialog; dieser bleibt P2-07. Status Review, menschliche Abnahme offen. Der vorherige abgenommene Stand bis P2-05 wurde auf ausdrücklichen Auftrag als `aae7f39` nach `origin/main` gepusht; P2-06 bleibt zunächst lokal. [Prüfprotokoll](../historie/p2-06-2026-11-03.md).
+
+
+P2-06 am 5. November 2026 ausdrücklich vom Benutzer abgenommen; P2-07 anschließend beauftragt. Die noch ausstehende Migration der laufenden lokalen Datenbank und fehlende aktuelle Hosted-CI sind im P2-06-Protokoll dokumentiert.
+
+
+P2-07 am 5. November 2026 umgesetzt und unabhängig geprüft: Verschiebedialog je Bestandszeile, Zielordnerbaum, erhaltene Eingaben bei Versionskonflikt, Quelle/Ziel im Verlauf und SQL-Pagination vor dem Laden der Detailzeilen. Isolierter Browsernachweis für 2 von 5, Vollverschiebung, Konkurrenzkorrektur, Unterordnerziel und Desktop-/Mobilbreiten; 15.000 synthetische Gruppen mit 25 Bild-URLs pro gerenderter Seite geprüft. 105 Tests bestanden, 13 Linux-Skips; Typprüfung, Build und Lint erfolgreich. Echte Telefone und aktuelle Hosted-CI offen. Der zunächst von der automatischen Freigabeprüfung abgelehnte lokale Start mit Migration 0008 wurde am 6. November 2026 ausdrücklich freigegeben und ausgeführt; Datenfingerprint unverändert, SQLite-Integrität ok und `/bestand` mit HTTP 200 erreichbar. Status Review. [Prüfbericht](../historie/p2-07-2026-11-05.md).
+
+
+P2-07-UX-Nacharbeit am 6. November 2026 ausdrücklich beauftragt und umgesetzt: Sammelauswahl mit Checkboxen/Mengen außerhalb der Details, Ordnerpfeil in der Toolbar und gemeinsame atomare Verschiebung mehrerer Karten. Unabhängige Browserprüfung für unterschiedliche Karten/Sprachen, späten Versionskonflikt ohne Teiländerung, mobile Ansicht und Rücksetzen bei Navigation bestanden. 110 Tests bestanden, 13 Linux-Skips; Typprüfung, Lint und Build erfolgreich. Normaler lokaler Stack wiederhergestellt (HTTP 200), Datenfingerprint unverändert. Status bleibt Review; keine Folgeaufgabe begonnen. [Nachweis](../historie/p2-07-2026-11-05.md#ux-nacharbeit-sammelauswahl-zum-verschieben-6-november-2026).
+
+
+P2-07-Darstellungskorrektur am 6. November 2026 nach Screenshot: intern getrennte, identische Teilbestände am selben Ort werden für die Sammelauswahl zu einer Checkbox mit Gesamtmenge zusammengefasst. Keine Datenzusammenführung oder Schemaänderung. Gruppierte Mengen über mehrere Ursprungszeilen, Versionskonflikt-Rollback und Mobilansicht unabhängig geprüft. 127 Tests bestanden, 13 Linux-Skips; Typprüfung, Build und Lint erfolgreich. Normaler Stack wieder erreichbar, Datenfingerprint unverändert. Status bleibt Review. [Prüfbericht](../historie/p2-07-2026-11-05.md#ux-nacharbeit-identische-teilbestände-zusammenfassen-6-november-2026).
+
+
+P2-07 am 6. November 2026 vom Benutzer ausdrücklich abgenommen, einschließlich Sammelverschiebung außerhalb der Details und gemeinsamer Auswahl identischer Teilbestände mit Gesamtmenge. Echte iPhone-/Android-Prüfungen und aktuelle Hosted-CI bleiben als ungeprüft dokumentiert; die bisherigen Nachweise stehen im [Prüfbericht](../historie/p2-07-2026-11-05.md). Keine Folgeaufgabe mit dieser Abnahme beauftragt oder gestartet.
+
+
+P2-08 am 6. November 2026 ausdrücklich beauftragt, umgesetzt und unabhängig geprüft: Limited Edition als eigener Wert in Varianten/Bestand, manueller Erfassung, Korrektur, Such-/Druckbeschriftungen und Bewegungsanzeige; Vorwärtsmigration `0009_limited_edition` mit erhaltenen befüllten FK-Verweisen und Verlauf. 134 Tests bestanden, 13 Linux-Skips; Typprüfung, Build und Lint erfolgreich. Isolierte Browserprüfung für manuelle Erfassung, Editionskorrektur, Trennung anderer Editionen und widersprüchlichen Druck bestanden. Am selben Tag nach ausdrücklichem Betriebsauftrag auf der gesicherten bestehenden lokalen Datenbank migriert und `ygh-local` gestartet: sämtliche fachlichen Tabelleninhalte unverändert, SQLite-Integrität/Fremdschlüssel geprüft, `/bestand` antwortet mit HTTP 200. Am 6. November 2026 vom Benutzer ausdrücklich abgenommen. Echte Telefone und aktuelle Hosted-CI bleiben ungeprüft; kein Collectr-Import gestartet. P0-02/E02 ist nach der dokumentierten Nachprüfung ebenfalls abgenommen; die bereits beauftragte Fortsetzung P3-01 beginnt am 6. November 2026 mit synthetischen Parserprüfungen ohne echte Übernahme. [Prüfbericht](../historie/p2-08-2026-11-06.md).
+
+P3-01 am 6. November 2026 umgesetzt: begrenzter Collectr-CSV-Parser mit Rohdatensatz, geordneten Feldern und Headerzuordnung, Originalzeilennummern, Syntax-/Feldbreitenbefunden und unveränderten Quellwerten. Synthetische Prüfungen decken Quotes, multiline Inhalte, Umordnung/Zusatzheader, Duplikatheader und -zeilen, Mengen, Watchlist und Editionsrohwerte ab. Parser ausschließlich mit synthetischen Daten geprüft; kein echter Import. Unabhängiger Review samt gezielter Nacharbeit abgeschlossen: Rohwerte auch bei Feldbreitenfehlern erhalten, Zeilenfehler trotz aggregierter Diagnosegrenze sichtbar, sichere Ganzzahlen geprüft. 12 Parser-Tests bestanden; vollständiger Projektlauf vor dem zusätzlichen Grenztest: 145 bestanden, 13 Linux-Skips. Typprüfung und Lint erfolgreich. Am 6. November 2026 vom Benutzer ausdrücklich abgenommen. Build, Python-/Linux-Hosttests und aktuelle Hosted-CI für dieses Paket nicht ausgeführt; kein echter Import. P3-02 und weitere Pakete sind nicht gestartet. [Prüfprotokoll](../historie/p3-01-2026-11-06.md).

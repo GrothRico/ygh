@@ -70,3 +70,11 @@ Unter den 5.471 übereinstimmenden Name-/Codezeilen stimmen bei 3.875 auch Setna
 ## Prüfung und Grenzen
 
 Python-Standardbibliothek `csv` mit UTF-8-Dekodierung und strengem CSV-Lesen; Mengen-/Spalten-/Leerwert-/Duplikatabgleich über alle Zeilen. Katalogvergleich nur lesend aus lokalem öffentlichen Katalog. Originaldatei unverändert, keine Uploads und keine Importtabellen/Bestände angelegt. Ergebnis ist eine Analyse dieses einzelnen Exports, keine allgemeine offizielle Collectr-Spezifikation. Unabhängiger Abgleich mit der Collectr-App, tatsächlicher Sprache/Edition und physischer Vollständigkeit steht aus.
+
+## Nachprüfung und Korrektur vom 6. November 2026
+
+Für die bedingte menschliche Abnahme erneut ausschließlich lesend gegen dieselbe Datei geprüft: SHA-256 und Bytezahl identisch, UTF-8/Zeilenenden, sämtliche 6.107 CSV-Zeilen mit 16 Feldern, Header, Watchlist-/Bestandsmengen, Portfolioverteilung, Produktausschluss, Editionsverteilung, exakte Dubletten und drei Mehrfachgruppen. Keine Originaldaten in Git übernommen.
+
+**Korrektur zum obigen historischen Editionsbefund:** Die Bestandszeilen umfassen 4.287 First Edition, **1.635 Unlimited**, **170 Limited** und sechs Normal-Produkte. Die ursprünglich genannten 1.641/171 enthielten zusätzlich sechs bzw. eine Watchlist-Zeile. Die Bestandsmengen 7.005/2.896/194/9 sowie alle Gesamt- und Portfoliosummen bleiben korrekt. „Ungraded“ ist in 6.096 Bestandszeilen gesetzt; nur zwei Zeilen sind tatsächlich gegradet. Keine exakt identischen Rohzeilen; drei Gruppen mit gleicher Portfolio-/Name-/Code-/Rarity-/Variance-Kombination bestätigt.
+
+Die Analyse deckt das beobachtete Exportprofil für den Parser ab. Die Katalogtrefferzahlen oben bleiben historische Kandidatenbefunde vom 3. November und wurden hier nicht erneut berechnet; sie sind keine bestätigten Importzuordnungen. Die Vollständigkeit gegenüber Collectr-App oder physischer Sammlung bleibt ungeprüft. Aktuelle Zielordner laut Benutzerentscheidung vom 6. November: Remo → Remo, Yu-Gi-Oh → Box, Trade-Ordner 1 → Trade-Ordner 1. Freigaben siehe Aufgabenindex.
