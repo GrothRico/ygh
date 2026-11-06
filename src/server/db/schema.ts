@@ -228,7 +228,7 @@ export const activityLog = sqliteTable("activity_log", {
   createdAt: text("created_at").notNull(),
 }, (table) => [
   check("activity_log_details_json_valid", sql`json_valid(${table.detailsJson})`),
-  check("activity_log_action_valid", sql`${table.action} IN ('stock.created', 'stock.corrected')`),
+  check("activity_log_action_valid", sql`${table.action} IN ('stock.created', 'stock.corrected', 'stock.moved')`),
   check("activity_log_entity_type_valid", sql`${table.entityType} = 'stock'`),
   index("activity_log_entity_idx").on(table.entityType, table.entityId, table.createdAt),
 ]);

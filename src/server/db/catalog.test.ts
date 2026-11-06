@@ -192,7 +192,7 @@ describe("SQLite-Katalogmigration", () => {
         migrated
           .prepare("SELECT count(*) AS count FROM __drizzle_migrations")
           .get(),
-      ).toEqual({ count: 8 });
+      ).toEqual({ count: 9 });
     } finally {
       migrated.close();
     }

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { StockManager } from "./StockManager";
+import { MoveStockDialog } from "./MoveStockDialog";
 
 vi.mock("./actions", () => ({ mutateStockAction: vi.fn() }));
 vi.mock("./location-actions", () => ({ mutateLocationAction: vi.fn() }));
@@ -54,6 +55,36 @@ describe("Bestandsordner und Karteikarten", () => {
     expect(markup).toContain('name="locationId" required="" disabled=""');
     expect(markup).toContain('aria-expanded="false"');
     expect(markup).toContain('id="stock-details-card" hidden=""');
+  });
+  it("zeigt auswählbare physische Sprachzeilen samt Mengenfeld außerhalb eingeklappter Details", () => {
+    const rows = [
+      { id: "de-row", cardId: "card-a", variantId: null, printingId: null, sourceObservationId: null, language: "de" as const, edition: "unknown" as const, locationId: "binder", quantity: 5, version: 2, cardName: "Prüfdrache", cardImageId: null, locationName: "Binder", printingCode: null, confirmedCode: "DR-01", rarity: null, artworkKey: null, observationCode: null, setName: null },
+      { id: "en-row", cardId: "card-a", variantId: null, printingId: null, sourceObservationId: null, language: "en" as const, edition: "unknown" as const, locationId: "binder", quantity: 4, version: 1, cardName: "Prüfdrache", cardImageId: null, locationName: "Binder", printingCode: null, confirmedCode: "DR-01", rarity: null, artworkKey: null, observationCode: null, setName: null },
+    ];
+    const markup = renderToStaticMarkup(<StockManager groups={[{ ...group, cardName: "Prüfdrache", rows }]} hasNextPage={false} page={0} locations={locations} choicesByCard={{}} cardId={null} cardName={null} cardNameEn={null} activityByStock={{}} locationId={null} invalidLocation={false} />);
+    expect(markup).toContain('aria-label="Auswahl verschieben"');
+    expect(markup).toContain('aria-label="Prüfdrache, Deutsch, Unbekannt, DR-01 auswählen"');
+    expect(markup).toContain('aria-label="Prüfdrache, Englisch, Unbekannt, DR-01: Verschiebemenge"');
+    expect(markup.indexOf("aria-label=\"Prüfdrache, Deutsch, Unbekannt, DR-01 auswählen\"")).toBeLessThan(markup.indexOf('id="stock-details-card" hidden=""'));
+    expect(markup).not.toContain(">Verschieben</button>");
+  });
+  it("zeigt identische physische Zeilen als eine Auswahl mit aggregierter Menge außerhalb der Details", () => {
+    const rows = [
+      { id: "stock-a", cardId: "card-a", variantId: null, printingId: null, sourceObservationId: "same-observation", language: "en" as const, edition: "first" as const, locationId: "binder", quantity: 1, version: 2, cardName: "Prüfdrache", cardImageId: null, locationName: "Binder", printingCode: null, confirmedCode: null, rarity: "Common", artworkKey: null, observationCode: "SET-1", setName: "Set" },
+      { id: "stock-b", cardId: "card-a", variantId: null, printingId: null, sourceObservationId: "same-observation", language: "en" as const, edition: "first" as const, locationId: "binder", quantity: 1, version: 6, cardName: "Prüfdrache", cardImageId: null, locationName: "Binder", printingCode: null, confirmedCode: null, rarity: "Common", artworkKey: null, observationCode: "SET-1", setName: "Set" },
+    ];
+    const markup = renderToStaticMarkup(<StockManager groups={[{ ...group, cardName: "Prüfdrache", edition: "first", rows }]} hasNextPage={false} page={0} locations={locations} choicesByCard={{}} cardId={null} cardName={null} cardNameEn={null} activityByStock={{}} locationId={null} invalidLocation={false} />);
+    expect(markup.match(/type="checkbox"/g)).toHaveLength(1);
+    expect(markup.match(/class="stock-row-quantity"/g)).toHaveLength(1);
+    expect(markup).toContain("2 verfügbar");
+    expect(markup).toContain('max="2"');
+    expect(markup.indexOf('aria-label="Englisch, 1st Edition, SET-1 · Set · Common auswählen"')).toBeLessThan(markup.indexOf('id="stock-details-card" hidden=""'));
+  });
+  it.each(["0", "-1", "1.5", "9007199254740992", "3"])("deaktiviert den Sammeldialog bei ungültiger Gruppenmenge %s", (quantity) => {
+    const row = { id: "stock-a", cardId: "card-a", variantId: null, printingId: null, sourceObservationId: "observation", language: "en" as const, edition: "first" as const, locationId: "binder", quantity: 1, version: 2, cardName: "Prüfdrache", cardImageId: null, locationName: "Binder", printingCode: null, confirmedCode: null, rarity: null, artworkKey: null, observationCode: null, setName: null };
+    const markup = renderToStaticMarkup(<MoveStockDialog selections={[{ key: "selection", rows: [row], quantity }]} visibleRowIds={new Set([row.id])} visibleRowsByKey={{ selection: [row.id] }} locations={locations} onClear={() => {}} onSuccess={() => {}} />);
+    expect(markup).toContain('aria-label="Auswahl verschieben"');
+    expect(markup).toMatch(/aria-label="Auswahl verschieben"[^>]*disabled=""/);
   });
   it("meldet ungültige Navigation statt veraltete Karten weiter anzuzeigen", () => {
     const markup = renderAt("foreign-id", true);
