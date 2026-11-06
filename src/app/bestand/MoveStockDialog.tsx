@@ -49,7 +49,7 @@ function MoveForm({ selections, visibleRowIds, visibleRowsByKey, locations, titl
       const row = rows[0];
       const location = locations.find((candidate) => candidate.id === row.locationId);
       const detail = [...new Set(rows.map(selectionReferenceLabel).filter(Boolean))].join(" / ");
-      const edition = row.edition === "first" ? "1st Edition" : row.edition === "unlimited" ? "Unlimited" : row.edition === "not_applicable" ? "Nicht anwendbar" : "Edition unbekannt";
+      const edition = row.edition === "first" ? "1st Edition" : row.edition === "unlimited" ? "Unlimited" : row.edition === "limited" ? "Limited Edition" : row.edition === "not_applicable" ? "Nicht anwendbar" : "Edition unbekannt";
       const total = rows.reduce((sum, candidate) => sum + candidate.quantity, 0);
       return <li key={key}><strong>{row.cardName} · {row.language === "de" ? "Deutsch" : row.language === "en" ? "Englisch" : "Sprache unbekannt"} · {edition}</strong>{detail && <span>{detail}</span>}<span>{quantity} von {total} · {location ? locationPath(location, locations) : `Standort-ID ${row.locationId}`}</span></li>;
     })}</ul>

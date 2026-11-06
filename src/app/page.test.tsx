@@ -51,7 +51,7 @@ describe("Startseite nach erfolgreicher Prüfung", () => {
 
   it("rendert pro geschütztem Suchtreffer ein vollständiges Erfassungsformular auf derselben Seite", async () => {
     requireReadAccess.mockResolvedValue({ id: "synthetic-user", role: "user", authMode: "tailscale" });
-    searchCards.mockReturnValue([{ id: "card-7", nameDe: "Testkarte", nameEn: "Test Card", sourceId: "7", rank: 0, printings: [], morePrintings: 0 }]);
+    searchCards.mockReturnValue([{ id: "card-7", nameDe: "Testkarte", nameEn: "Test Card", sourceId: "7", rank: 0, printings: [{ kind: "confirmed", variantId: "variant-limited", artworkKey: "default", setName: "Synthetic Set", code: "SYN-L", language: "en", edition: "limited", rarity: "Common" }], morePrintings: 0 }]);
     listLocations.mockReturnValue([{ id: "location-1", name: "Schublade", kind: "folder", parentId: null }]);
     getStockChoices.mockReturnValue([]);
     vi.stubEnv("DATABASE_PATH", "/synthetic/database.sqlite");
@@ -62,6 +62,8 @@ describe("Startseite nach erfolgreicher Prüfung", () => {
       expect(markup).toContain('name="reference"');
       expect(markup).toContain('name="language"');
       expect(markup).toContain('name="edition"');
+      expect(markup).toContain('<option value="limited">Limited Edition</option>');
+      expect(markup).toContain("Limited Edition");
       expect(markup).toContain('name="quantity"');
       expect(markup).toContain('name="locationId"');
       expect(markup).toContain("Hinzufügen");

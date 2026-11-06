@@ -154,7 +154,7 @@ export const variants = sqliteTable("variants", {
   ),
   check(
     "variants_edition_valid",
-    sql`${table.edition} IN ('first', 'unlimited', 'not_applicable')`,
+    sql`${table.edition} IN ('first', 'unlimited', 'limited', 'not_applicable')`,
   ),
   check("variants_rarity_nonempty", sql`length(trim(${table.rarity})) > 0`),
   check(
@@ -209,7 +209,7 @@ export const stock = sqliteTable("stock", {
   updatedAt: text("updated_at").notNull(),
 }, (table) => [
   check("stock_language_valid", sql`${table.language} IN ('unknown', 'de', 'en')`),
-  check("stock_edition_valid", sql`${table.edition} IN ('unknown', 'first', 'unlimited', 'not_applicable')`),
+  check("stock_edition_valid", sql`${table.edition} IN ('unknown', 'first', 'unlimited', 'limited', 'not_applicable')`),
   check("stock_quantity_positive", sql`typeof(${table.quantity}) = 'integer' AND ${table.quantity} > 0 AND ${table.quantity} <= 9007199254740991`),
   check("stock_version_positive", sql`typeof(${table.version}) = 'integer' AND ${table.version} > 0 AND ${table.version} <= 9007199254740991`),
   check("stock_print_reference_exclusive", sql`${table.sourceObservationId} IS NULL OR (${table.variantId} IS NULL AND ${table.printingId} IS NULL)`),

@@ -160,6 +160,32 @@ describe("YGOPRODeck catalog sync", () => {
     expect(requests.map((url) => url.searchParams.get("language")).sort()).toEqual(["de", null]);
   });
 
+  it("keeps manually recorded limited stock on the same imported card across catalog updates", () => {
+    const databasePath = temporaryDatabasePath();
+    migrate(databasePath);
+    const database = new Database(databasePath);
+    try {
+      database.pragma("foreign_keys = ON");
+      const initial = sampleSnapshot();
+      applyCatalogSnapshot(database, initial, "2026-11-02T10:00:00.000Z");
+      const card = database.prepare("SELECT id FROM cards WHERE source = 'ygoprodeck' AND source_id = '1001'").get() as { id: string };
+      const location = database.prepare("SELECT id FROM locations WHERE kind = 'unknown'").get() as { id: string };
+      const timestamp = "2026-11-02T10:01:00.000Z";
+      database.prepare("INSERT INTO stock (id, card_id, language, edition, location_id, quantity, version, created_at, updated_at) VALUES ('manual-limited-stock', ?, 'unknown', 'limited', ?, 3, 4, ?, ?)").run(card.id, location.id, timestamp, timestamp);
+      const updated: CatalogSnapshot = {
+        ...initial,
+        englishCards: initial.englishCards.map((item) => item.sourceId === "1001" ? { ...item, name: "Updated Example Dragon" } : item),
+      };
+      applyCatalogSnapshot(database, updated, "2026-11-02T10:02:00.000Z");
+      expect(database.prepare("SELECT id, card_id, edition, quantity, version, created_at, updated_at FROM stock WHERE id = 'manual-limited-stock'").get()).toEqual({ id: "manual-limited-stock", card_id: card.id, edition: "limited", quantity: 3, version: 4, created_at: timestamp, updated_at: timestamp });
+      expect(database.prepare("SELECT name_en FROM cards WHERE id = ?").get(card.id)).toEqual({ name_en: "Updated Example Dragon" });
+      expect(database.prepare("SELECT count(*) AS count FROM variants WHERE card_id = ?").get(card.id)).toEqual({ count: 0 });
+      expect(database.pragma("foreign_key_check")).toEqual([]);
+    } finally {
+      database.close();
+    }
+  });
+
   it("stores and replaces the four complete parsed API documents", () => {
     const databasePath = temporaryDatabasePath();
     migrate(databasePath);

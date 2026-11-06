@@ -15,7 +15,7 @@ import { groupEquivalentStockRows, selectionReferenceLabel } from "./stock-selec
 
 const initialState: StockActionState = { ok: false, message: null };
 const languageLabels = { unknown: "Unbekannt", de: "Deutsch", en: "Englisch" } as const;
-const editionLabels = { unknown: "Unbekannt", first: "1st Edition", unlimited: "Unlimited", not_applicable: "Nicht anwendbar" } as const;
+const editionLabels = { unknown: "Unbekannt", first: "1st Edition", unlimited: "Unlimited", limited: "Limited Edition", not_applicable: "Nicht anwendbar" } as const;
 type SelectedMove = { key: string; rows: StockRow[]; quantity: string };
 
 function ActionMessage({ state }: { state: StockActionState }) {
@@ -31,7 +31,7 @@ function StockForm({ locations, cardId, choices, row }: { locations: LocationRow
     {row && <><input type="hidden" name="id" value={row.id} /><input type="hidden" name="version" value={row.version} /><input type="hidden" name="locationId" value={row.locationId} /></>}
     <label>Druck oder Variante<select name="reference" defaultValue={reference}><option value="">Keine genaue Druckangabe</option>{choices.map((choice) => <option key={`${choice.kind}:${choice.id}`} value={`${choice.kind}:${choice.id}`}>{choiceLabel(choice)}</option>)}</select></label>
     <label>Sprache<select name="language" defaultValue={row?.language ?? "unknown"}><option value="unknown">Unbekannt</option><option value="de">Deutsch</option><option value="en">Englisch</option></select></label>
-    <label>Edition<select name="edition" defaultValue={row?.edition ?? "unknown"}><option value="unknown">Unbekannt</option><option value="first">1st Edition</option><option value="unlimited">Unlimited</option><option value="not_applicable">Nicht anwendbar</option></select></label>
+    <label>Edition<select name="edition" defaultValue={row?.edition ?? "unknown"}><option value="unknown">Unbekannt</option><option value="first">1st Edition</option><option value="unlimited">Unlimited</option><option value="limited">Limited Edition</option><option value="not_applicable">Nicht anwendbar</option></select></label>
     <label>Menge<input name="quantity" type="number" min="1" step="1" max="9007199254740991" required defaultValue={row?.quantity ?? 1} /></label>
     <label>Standort<select name="locationId" required defaultValue={row?.locationId ?? ""} disabled={Boolean(row)}><option value="" disabled>Standort wählen</option>{locations.map((location) => <option key={location.id} value={location.id}>{locationPath(location, locations)}</option>)}</select></label>
     <button type="submit" disabled={pending}>{row ? "Korrektur speichern" : "Bestand erfassen"}</button>

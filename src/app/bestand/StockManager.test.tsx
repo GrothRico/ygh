@@ -86,6 +86,12 @@ describe("Bestandsordner und Karteikarten", () => {
     expect(markup).toContain('aria-label="Auswahl verschieben"');
     expect(markup).toMatch(/aria-label="Auswahl verschieben"[^>]*disabled=""/);
   });
+  it("zeigt Limited Edition in Bestand, Korrekturformular und Verschiebedialog", () => {
+    const row = { id: "limited-stock", cardId: "card-a", variantId: null, printingId: null, sourceObservationId: null, language: "unknown" as const, edition: "limited" as const, locationId: "binder", quantity: 2, version: 3, cardName: "Prüfdrache", cardImageId: null, locationName: "Binder", printingCode: null, confirmedCode: null, rarity: null, artworkKey: null, observationCode: null, setName: null };
+    const markup = renderToStaticMarkup(<StockManager groups={[{ ...group, edition: "limited", rows: [row] }]} hasNextPage={false} page={0} locations={locations} choicesByCard={{}} cardId={null} cardName={null} cardNameEn={null} activityByStock={{}} locationId={null} invalidLocation={false} />);
+    expect(markup).toContain("Limited Edition");
+    expect(markup).toContain('<option value="limited" selected="">Limited Edition</option>');
+  });
   it("meldet ungültige Navigation statt veraltete Karten weiter anzuzeigen", () => {
     const markup = renderAt("foreign-id", true);
     expect(markup).toContain("Der gewählte Ordner ist ungültig");

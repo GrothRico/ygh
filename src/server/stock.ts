@@ -5,7 +5,7 @@ import type Database from "better-sqlite3";
 import { openDatabase } from "./db";
 
 export type StockLanguage = "unknown" | "de" | "en";
-export type StockEdition = "unknown" | "first" | "unlimited" | "not_applicable";
+export type StockEdition = "unknown" | "first" | "unlimited" | "limited" | "not_applicable";
 export type StockInput = {
   cardId: string;
   variantId: string | null;
@@ -150,7 +150,7 @@ function validateInput(input: StockInput): void {
   if (!input || typeof input !== "object" || !asId(input.cardId) || !asId(input.locationId)) throw new StockError("invalid_input");
   if (!Number.isSafeInteger(input.quantity) || input.quantity < 1) throw new StockError("invalid_input");
   if (!(["unknown", "de", "en"] as unknown[]).includes(input.language)) throw new StockError("invalid_input");
-  if (!(["unknown", "first", "unlimited", "not_applicable"] as unknown[]).includes(input.edition)) throw new StockError("invalid_input");
+  if (!(["unknown", "first", "unlimited", "limited", "not_applicable"] as unknown[]).includes(input.edition)) throw new StockError("invalid_input");
   asId(input.variantId); asId(input.printingId); asId(input.sourceObservationId);
   if (input.sourceObservationId && (input.variantId || input.printingId)) throw new StockError("invalid_input");
   if (input.printingId && !input.variantId) throw new StockError("invalid_input");

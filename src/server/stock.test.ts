@@ -110,6 +110,29 @@ describe("P2-05 Bestand", () => {
     expect(groups.find((group) => group.edition === "first")).toMatchObject({ total: 2, languageCounts: { de: 1, en: 1, unknown: 0 } });
     expect(groups.find((group) => group.edition === "unlimited")?.total).toBe(2);
   });
+  it("erfasst und korrigiert Limited Edition ohne Variante und gruppiert sie getrennt", () => {
+    const { databasePath, locationId } = createDb();
+    const id = recordStock(databasePath, input(locationId, { edition: "limited", quantity: 2 }), "user-a", "limited-create");
+    correctStock(databasePath, id, 1, input(locationId, { edition: "limited", quantity: 3, language: "en" }), "user-b", "limited-correct");
+    const groups = listStock(databasePath);
+    expect(groups.find((group) => group.edition === "limited")).toMatchObject({ total: 3, languageCounts: { unknown: 0, de: 0, en: 3 } });
+    expect(groups.some((group) => group.edition === "unknown")).toBe(false);
+    expect(() => recordStock(databasePath, input(locationId, { variantId: "fixture-variant-001", edition: "limited" }), "user-a", "limited-mismatch"))
+      .toThrowError(expect.objectContaining({ code: "variant_mismatch" }));
+  });
+
+  it("bindet eine bestätigte Limited-Variante und ihren Druck passend an", () => {
+    const { databasePath, locationId } = createDb();
+    const database = new Database(databasePath);
+    try {
+      database.prepare("INSERT INTO variants (id, card_id, set_id, collector_number, edition, rarity, artwork_key) VALUES ('fixture-variant-limited', 'fixture-card-001', 'fixture-set-001', 'SYN-L', 'limited', 'synthetic-common', 'default')").run();
+      database.prepare("INSERT INTO printings (id, variant_id, language, printed_code, source, source_id) VALUES ('fixture-printing-limited-en', 'fixture-variant-limited', 'en', 'SYN-L', 'manual', 'limited-en')").run();
+    } finally { database.close(); }
+    expect(() => recordStock(databasePath, input(locationId, { variantId: "fixture-variant-limited", printingId: "fixture-printing-limited-en", language: "en", edition: "limited", quantity: 1 }), "user-a", "limited-confirmed" )).not.toThrow();
+    expect(() => recordStock(databasePath, input(locationId, { variantId: "fixture-variant-limited", printingId: "fixture-printing-limited-en", language: "en", edition: "first", quantity: 1 }), "user-a", "limited-mismatch"))
+      .toThrowError(expect.objectContaining({ code: "variant_mismatch" }));
+  });
+
   it("filtert frei benannte Ordner einschließlich aller Unterstandorte vor Gruppierung", () => {
     const { databasePath, locationId } = createDb();
     const locations = listLocations(databasePath);
